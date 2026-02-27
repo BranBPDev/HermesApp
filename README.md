@@ -19,13 +19,16 @@ El objetivo del proyecto es desarrollar un comparador de precios funcional, prec
 ---
 
 ## 🏪 Supermercados Soportados Actualmente
+<div align="center">
 
-        | Supermercado | Estado |
-        | :--- | :--- |
-        | **Mercadona** | ✅ Operativo |
-        | **Lidl** | ✅ Operativo |
-        | **Gadis** | ✅ Operativo |
-        | **Eroski** | ✅ Operativo |
+| Supermercado | Estado |
+| :--- | :--- |
+| **Mercadona** | ✅ Operativo |
+| **Lidl** | ✅ Operativo |
+| **Gadis** | ✅ Operativo |
+| **Eroski** | ✅ Operativo |
+
+</div>
 
 ---
 
@@ -51,14 +54,14 @@ HermesApp incorpora un sistema automático de actualización completamente trans
 
 ## 🏗 Arquitectura Técnica
 
-**HermesApp/**
-│   ├── ⚓ **pyinstaller_hooks/** — Hooks personalizados para el empaquetado
-│   ├── 🐍 **main.py** — Punto de entrada de la aplicación
-│   ├── 📄 **HermesApp.spec** — Configuración para PyInstaller
-│   └── 📂 **app/**
-│       ├── ⚙️ **managers/** — Gestión de ejecución paralela (*Thread Management*)
-│       ├── 📐 **models/** — Clases base y contratos de scrapers
-│       ├── 🕷️ **scrapers/** — Implementaciones específicas por supermercado
+**HermesApp/**  
+│   ├── ⚓ **pyinstaller_hooks/** — Hooks personalizados para el empaquetado  
+│   ├── 🐍 **main.py** — Punto de entrada de la aplicación  
+│   ├── 📄 **HermesApp.spec** — Configuración para PyInstaller  
+│   └── 📂 **app/**  
+│       ├── ⚙️ **managers/** — Gestión de ejecución paralela (*Thread Management*)  
+│       ├── 📐 **models/** — Clases base y contratos de scrapers  
+│       ├── 🕷️ **scrapers/** — Implementaciones específicas por supermercado  
 │       └── 🛠️ **utils/** — Utilidades (descarga, JSON, actualización, rutas)
 
 ### Características técnicas principales
@@ -126,9 +129,21 @@ pyinstaller HermesApp.spec
 ```bash
 deactivate
 ```
+  
+
+> ⚠️ Es importante que el `.exe` use el archivo `app/data/version.json` correspondiente, pero no junto con el código fuente, para evitar conflictos.  
 
 
-> ⚠️ Es importante que el `.exe` use el archivo `app/data/version.json` correspondiente, pero no junto con el código fuente, para evitar conflictos.
+```text
+{
+    "name": "HermesApp",
+    "description": "La forma más rápida e inteligente de comparar precios entre supermercados en España y ahorrar en cada compra.",
+    "version": "0.0.0",
+    "releaseDate": "2026-02-20",
+    "author": "BranBP",
+    "repository": "https://github.com/BranBPDev/HermesApp"
+}
+```
 
 ---
 
