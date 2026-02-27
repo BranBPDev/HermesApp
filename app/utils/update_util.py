@@ -11,7 +11,10 @@ from app.utils.paths_util import (
 )
 
 def is_latest_version():
-    return read_json(VERSION_JSON)["version"] == read_json(REMOTE_VERSION_JSON)["version"]
+    try:
+        return read_json(VERSION_JSON)["version"] == read_json(REMOTE_VERSION_JSON)["version"]
+    except Exception:
+        return True
 
 def perform_update():
     # 1. Limpieza preventiva

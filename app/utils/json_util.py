@@ -23,3 +23,8 @@ def read_json(source: Union[Path, str]) -> dict:
         return read_json_remote(source)
     
     raise TypeError("read_json solo acepta Path (local) o str con URL http/https (remoto)")
+
+def save_json(file_path: Path, data: Union[dict, list]):
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, separators=(',', ':'))
