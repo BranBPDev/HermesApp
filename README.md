@@ -105,7 +105,6 @@ Próximas metas:
 * 🎨 Interfaz de Usuario (GUI)
 * ⚖️ Comparador Estructurado
 * 🔍 Búsqueda Avanzada
-* 🗄️ Persistencia en SQLite
 
 ---
 
