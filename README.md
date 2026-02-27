@@ -19,14 +19,14 @@ El objetivo del proyecto es desarrollar un comparador de precios funcional, prec
 ---
 
 ## 🏪 Supermercados Soportados Actualmente
-<div align="center">
-| Supermercado | Estado |
-| :--- | :--- |
-| **Mercadona** | ✅ Operativo |
-| **Lidl** | ✅ Operativo |
-| **Gadis** | ✅ Operativo |
-| **Eroski** | ✅ Operativo |
-</div>
+
+        | Supermercado | Estado |
+        | :--- | :--- |
+        | **Mercadona** | ✅ Operativo |
+        | **Lidl** | ✅ Operativo |
+        | **Gadis** | ✅ Operativo |
+        | **Eroski** | ✅ Operativo |
+
 ---
 
 ## ⬇️ Descarga (IMPORTANTE)
@@ -51,13 +51,15 @@ HermesApp incorpora un sistema automático de actualización completamente trans
 
 ## 🏗 Arquitectura Técnica
 
-**HermesApp/** ├── 📂 **app/** │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── ⚙️ **managers/** — Gestión de ejecución paralela (*Thread Management*)  
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 📐 **models/** — Clases base y contratos de scrapers  
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 🕷️ **scrapers/** — Implementaciones específicas por supermercado  
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── 🛠️ **utils/** — Utilidades (descarga, JSON, actualización, rutas)  
-├── ⚓ **pyinstaller_hooks/** — Hooks personalizados para el empaquetado  
-├── 🐍 **main.py** — Punto de entrada de la aplicación  
-└── 📄 **HermesApp.spec** — Configuración para PyInstaller
+**HermesApp/**
+│   ├── ⚓ **pyinstaller_hooks/** — Hooks personalizados para el empaquetado
+│   ├── 🐍 **main.py** — Punto de entrada de la aplicación
+│   ├── 📄 **HermesApp.spec** — Configuración para PyInstaller
+│   └── 📂 **app/**
+│       ├── ⚙️ **managers/** — Gestión de ejecución paralela (*Thread Management*)
+│       ├── 📐 **models/** — Clases base y contratos de scrapers
+│       ├── 🕷️ **scrapers/** — Implementaciones específicas por supermercado
+│       └── 🛠️ **utils/** — Utilidades (descarga, JSON, actualización, rutas)
 
 ### Características técnicas principales
 
@@ -124,6 +126,7 @@ pyinstaller HermesApp.spec
 ```bash
 deactivate
 ```
+
 
 > ⚠️ Es importante que el `.exe` use el archivo `app/data/version.json` correspondiente, pero no junto con el código fuente, para evitar conflictos.
 
