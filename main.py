@@ -1,19 +1,24 @@
 from app.utils.update_util import is_latest_version, perform_update
 from app.managers.scraper_manager import run_all_scrapers_parallel
+from app.utils.logger_util import HermesLogger
+import threading
 
 def main():
-    # 1. El auto-updater siempre primero
+    log = HermesLogger.get_logger("MAIN")
+    log.info("--- INICIO DE APLICACIÓN ---")
+
     if not is_latest_version():
+        print("[UPDATE] Actualizando a la última versión...")
         perform_update()
+        return
 
-    # 2. Lanzamos la recogida de datos paralela (Segundo plano)
-    # Esto creará los JSON en data/raw/ sin bloquear el input de abajo
-    run_all_scrapers_parallel()
+    # Ejecución paralela
+    threading.Thread(target=run_all_scrapers_parallel, daemon=True).start()
 
-    print("\n[INFO] La aplicación está lista.")
-    print("[INFO] Los scrapers están trabajando en segundo plano...")
-    
-    input("\nPresiona ENTER para salir y detener los procesos...")
+    print("\n" + "="*30)
+    print(" HERMES APP - MONITORING")
+    print("="*30)
+    input("Presiona ENTER para cerrar...\n")
 
 if __name__ == "__main__":
     main()

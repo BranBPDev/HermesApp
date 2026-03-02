@@ -24,9 +24,8 @@ El objetivo del proyecto es desarrollar un comparador de precios funcional, prec
 | Supermercado | Estado |
 | :--- | :--- |
 | **Mercadona** | ✅ Operativo |
-| **Lidl** | ✅ Operativo |
-| **Gadis** | ✅ Operativo |
-| **Eroski** | ✅ Operativo |
+| **Gadis** | ❌ En Desarrollo |
+| **Eroski** | 🔄 En Revisión (Fixing 404s) |
 
 </div>
 
@@ -142,6 +141,16 @@ deactivate
     "repository": "https://github.com/BranBPDev/HermesApp"
 }
 ```
+
+---
+
+## 📁 Sistema de Logs
+Para facilitar el mantenimiento, la aplicación genera logs detallados en la carpeta raíz:
+`logs/hermesApp.log`
+
+* **INFO:** Seguimiento del flujo (Inicios/Finales de scrapers).
+* **DEBUG:** Detalles técnicos (URLs procesadas, inyección de cookies).
+* **ERROR:** Fallos específicos de red o parseo de datos (ver Tracebacks).
 
 ---
 

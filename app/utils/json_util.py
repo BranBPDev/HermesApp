@@ -1,7 +1,7 @@
 import json
 import requests
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 def read_json_local(file_path: Path) -> dict:
     if not file_path.exists():
@@ -10,18 +10,17 @@ def read_json_local(file_path: Path) -> dict:
     with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def read_json_remote(url: str) -> dict:
-    response = requests.get(url, timeout=10)
+def read_json_remote(url: str, session: Optional[requests.Session] = None) -> dict:
+    s = session or requests.Session()
+    response = s.get(url, timeout=10)
     response.raise_for_status()
     return response.json()
 
-def read_json(source: Union[Path, str]) -> dict:
+def read_json(source: Union[Path, str], session: Optional[requests.Session] = None) -> dict:
     if isinstance(source, Path):
         return read_json_local(source)
-    
     if isinstance(source, str) and (source.startswith("http://") or source.startswith("https://")):
-        return read_json_remote(source)
-    
+        return read_json_remote(source, session=session)
     raise TypeError("read_json solo acepta Path (local) o str con URL http/https (remoto)")
 
 def save_json(file_path: Path, data: Union[dict, list]):

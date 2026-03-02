@@ -1,41 +1,42 @@
 import requests
 from abc import ABC, abstractmethod
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+from app.utils.logger_util import HermesLogger
 
 class BaseScraper(ABC):
-
-    def __init__(self, name, headers):
+    def __init__(self, name: str, headers: dict):
         self.name = name
         self.products = []
-        self._id_counter = 0
+        self.log = HermesLogger.get_logger(name)
+        self._session = self._build_session(headers)
 
-        self.session = requests.Session()
-        self.session.headers.update(headers)
-
-        adapter = requests.adapters.HTTPAdapter(pool_connections=20, pool_maxsize=20)
-        self.session.mount("https://", adapter)
+    def _build_session(self, headers: dict) -> requests.Session:
+        session = requests.Session()
+        session.headers.update(headers)
+        retry_strategy = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+        adapter = HTTPAdapter(pool_connections=50, pool_maxsize=50, max_retries=retry_strategy)
+        session.mount("https://", adapter)
+        return session
 
     @abstractmethod
-    def scrape(self):
-        pass
+    def scrape(self) -> list: pass
 
-    def get_json(self, url, timeout=10):
+    def get_json(self, url: str, **kwargs):
         try:
-            r = self.session.get(url, timeout=timeout)
-            if r.status_code != 200:
-                return None
-            return r.json()
-        except:
+            resp = self._session.get(url, timeout=15, **kwargs)
+            return resp.json() if resp.ok else None
+        except Exception as e:
+            self.log.error(f"Error JSON en {url}: {e}")
             return None
 
-    def add_product(self, name, price, reference_price, quantity, unit_type, image_url):
+    def add_product(self, name, price, **kwargs):
         if name and price is not None:
             self.products.append({
-                "id": self._id_counter,
-                "nombre": name,
+                "nombre": str(name).strip(),
                 "precio": float(price),
-                "precio_referencia": float(reference_price) if reference_price else None,
-                "cantidad": float(quantity) if quantity else None,
-                "tipo_unidad": unit_type,
-                "imagen": image_url
+                "precio_referencia": float(kwargs.get('reference_price')) if kwargs.get('reference_price') else None,
+                "cantidad": kwargs.get('quantity'),
+                "tipo_unidad": kwargs.get('unit_type'),
+                "imagen": kwargs.get('image_url')
             })
-            self._id_counter += 1
