@@ -21,11 +21,11 @@ El objetivo del proyecto es desarrollar un comparador de precios funcional, prec
 ## 🏪 Supermercados Soportados Actualmente
 <div align="center">
 
-| Supermercado | Estado |
-| :--- | :--- |
-| **Mercadona** | ✅ Operativo |
-| **Gadis** | ❌ En Desarrollo |
-| **Eroski** | 🔄 En Revisión (Fixing 404s) |
+| **Supermercado** | **Estado** | **Productos** |
+| :--- | :--- | :--- |
+| **Mercadona** | ✅ Operativo | ~4000+ |
+| **Eroski** | 🔄 En Revisión (Fixing 404s) | 0 |
+| **Gadis** | ❌ En Desarrollo | 0 |
 
 </div>
 

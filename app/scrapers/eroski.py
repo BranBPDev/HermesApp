@@ -1,55 +1,51 @@
 from app.models.scraper_base import BaseScraper
-from app.utils.configs_util import EROSKI_HEADERS, EROSKI_COOKIES, EROSKI_BASE_CAT_URL
+from app.utils.configs_util import EROSKI_HEADERS, EROSKI_COOKIES
 import re, json, time
 
 class EroskiScraper(BaseScraper):
     def __init__(self):
         super().__init__("EROSKI", EROSKI_HEADERS)
-        # Inyectamos cookies para evitar redirecciones y 404s
         self._session.cookies.update(EROSKI_COOKIES)
 
     def scrape(self):
+        # Usaremos las categorías con su nombre completo, que es lo que espera el loadpage
         categories = [
             "2059988-aceite-vinagre-sal-harina-y-pan-rallado",
             "2060015-conservas-de-pescado",
             "2059807-leche-batidos-y-bebidas-vegetales",
-            "2060029-legumbres-arroz-y-pasta",
-            "2059818-yogures"
+            "2060029-legumbres-arroz-y-pasta"
         ]
         
         try:
-            self.log.info("Iniciando escaneo optimizado...")
-            
             for cat in categories:
+                # El endpoint loadpage requiere el ID dentro de la ruta
+                # Formato: .../loadpage/ID_CATEGORIA/PAGINA
+                cat_id = cat.split('-')[0]
                 for page in range(1, 11):
-                    url = EROSKI_BASE_CAT_URL.format(cat=cat, page=page)
+                    # Esta es la URL AJAX "pata negra" que usa su front-end
+                    url = f"https://supermercado.eroski.es/es/supermarket.productlist:loadpage/{cat_id}/{page}"
+                    
                     resp = self._session.get(url, timeout=15)
+                    if not resp.ok or not resp.text: break
                     
-                    if not resp.ok:
-                        self.log.error(f"Error {resp.status_code} en {cat} p{page}")
-                        break
-                    
+                    # Buscamos el JSON de productos
                     blocks = re.findall(r'data-metrics=["\'](\{.*?\})["\']', resp.text)
                     if not blocks: break
 
                     for b in blocks:
                         try:
-                            clean_json = b.replace('&quot;', '"')
-                            item_data = json.loads(clean_json)
-                            items = item_data.get("ecommerce", {}).get("items", [{}])
-                            if items and items[0]:
-                                d = items[0]
+                            item = json.loads(b.replace('&quot;', '"'))
+                            d = item.get("ecommerce", {}).get("items", [{}])[0]
+                            if d.get('item_name'):
                                 self.add_product(
-                                    name=f"{d.get('item_brand','')} {d.get('item_name','')}".strip(), 
+                                    name=f"{d.get('item_brand','')} {d.get('item_name','')}".strip(),
                                     price=d.get("price")
                                 )
                         except: continue
-                    time.sleep(0.05)
+                    time.sleep(0.1)
 
-            # Eliminar duplicados por nombre
             self.products = list({p['nombre']: p for p in self.products}.values())
             return self.products
-
-        except Exception:
-            self.log.exception("Error fatal en Eroski")
+        except Exception as e:
+            self.log.error(f"Error: {e}")
             return []

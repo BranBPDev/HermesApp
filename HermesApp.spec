@@ -3,12 +3,11 @@ import os
 import certifi
 from PyInstaller.building.build_main import Analysis, PYZ, EXE
 
-# Obtenemos la ruta absoluta de la carpeta del proyecto
 project_root = os.path.abspath(os.getcwd())
 
 a = Analysis(
     ['main.py'],
-    pathex=[project_root],  # Añadimos la raíz para que encuentre la carpeta 'app'
+    pathex=[project_root],
     binaries=[],
     datas=[
         (certifi.where(), 'certifi'), # Certificados SSL
@@ -22,8 +21,13 @@ a = Analysis(
         'app.utils.download_util',
         'app.utils.paths_util',
         'app.utils.zip_util',
+        'app.utils.logger_util',
+        'app.utils.configs_util',
         'app.managers.scraper_manager',
-        'app.scrapers.mercadona'
+        'app.models.scraper_base',
+        'app.scrapers.mercadona',
+        'app.scrapers.eroski',
+        'app.scrapers.gadis'
     ],
     hookspath=[],
     runtime_hooks=['pyinstaller_hooks/rthook_certifi.py'],
@@ -48,7 +52,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True, # Mantenemos consola para ver el progreso de los scrapers
+    console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

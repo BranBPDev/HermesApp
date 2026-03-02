@@ -5,7 +5,7 @@ import sys
 BASE_DIR = Path(sys.executable).parent
 
 # LOGS
-LOGS_DIR = BASE_DIR / "logs"
+LOGS_DIR = BASE_DIR / "app" / "logs"
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
 MAIN_LOG_PATH = LOGS_DIR / "hermesApp.log"
 

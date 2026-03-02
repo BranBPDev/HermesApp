@@ -23,7 +23,8 @@ GADIS_HEADERS = {
 }
 
 # --- EROSKI ---
-EROSKI_BASE_CAT_URL = "https://supermercado.eroski.es/es/supermercado/2059806-alimentacion/{cat}/p-{page}/"
+# Este es el endpoint real que devuelve el HTML de los productos
+EROSKI_AJAX_URL = "https://supermercado.eroski.es/es/supermarket.productlist:loadpage/{cat}/{page}"
 
 EROSKI_COOKIES = {
     "p_provincia": "15",
@@ -32,10 +33,8 @@ EROSKI_COOKIES = {
 }
 
 EROSKI_HEADERS = {
-    "accept": "*/*",
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,/ ;q=0.8",
     "accept-language": "es-ES,es;q=0.9",
-    "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-    "origin": "https://supermercado.eroski.es",
-    "x-requested-with": "XMLHttpRequest",
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+    "x-requested-with": "XMLHttpRequest", # CRUCIAL para que no devuelva 404
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
 }
