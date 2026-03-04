@@ -20,44 +20,39 @@ El objetivo del proyecto es desarrollar un comparador de precios funcional, prec
 
 ## 🏪 Supermercados Soportados Actualmente
 <div align="center">
-  <h1>🛒 HermesApp</h1>
-  <p><i>Monitor de precios inteligente para supermercados españoles</i></p>
-
-  <br />
-
-  <table style="width: 100%; max-width: 800px; border-collapse: separate; border-spacing: 0; border: 1px solid #30363d; border-radius: 10px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
+  <table style="width: 100%; max-width: 800px; border-collapse: separate; border-spacing: 0; border: 1px solid #30363d; border-radius: 12px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
     <thead>
       <tr style="background-color: #161b22; color: #f0f6fc;">
-        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center;"><b>Supermercado</b></th>
-        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center;"><b>Estado</b></th>
-        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center;"><b>Productos</b></th>
-        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center;"><b>Tiempo</b></th>
+        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center; vertical-align: middle;"><b>Supermercado</b></th>
+        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center; vertical-align: middle;"><b>Estado</b></th>
+        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center; vertical-align: middle;"><b>Productos</b></th>
+        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center; vertical-align: middle;"><b>Tiempo</b></th>
       </tr>
     </thead>
     <tbody>
       <tr style="background-color: #0d1117; color: #c9d1d9;">
-        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;"><b>Mercadona ✅</b></td>
-        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;">
-          <code style="color: #3fb950; background: rgba(46, 160, 67, 0.15); padding: 4px 8px; border-radius: 6px; font-weight: bold;">Operativo</code>
+        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;"><b>Mercadona</b></td>
+        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;">
+          <span style="display: inline-block; background-color: #238636; color: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; min-width: 100px;">Operativo</span>
         </td>
-        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;">~4400+</td>
-        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;">2-4 segundos</td>
+        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;">~4410</td>
+        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;">3.7s</td>
       </tr>
       <tr style="background-color: #161b22; color: #c9d1d9;">
-        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;"><b>Eroski 🔄</b></td>
-        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;">
-          <code style="color: #d29922; background: rgba(187, 128, 9, 0.15); padding: 4px 8px; border-radius: 6px; font-weight: bold;">En Revisión</code>
+        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;"><b>Eroski</b></td>
+        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;">
+          <span style="display: inline-block; background-color: #d29922; color: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; min-width: 100px;">En Revisión</span>
         </td>
-        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;">~4100+</td>
-        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;">15-20 segundos</td>
+        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;">~4096</td>
+        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;">19.4s</td>
       </tr>
       <tr style="background-color: #0d1117; color: #c9d1d9;">
-        <td style="padding: 15px; text-align: center;"><b>Gadis ❌</b></td>
-        <td style="padding: 15px; text-align: center;">
-          <code style="color: #f85149; background: rgba(248, 81, 73, 0.15); padding: 4px 8px; border-radius: 6px; font-weight: bold;">En Desarrollo</code>
+        <td style="padding: 20px; text-align: center; vertical-align: middle;"><b>Gadis</b></td>
+        <td style="padding: 20px; text-align: center; vertical-align: middle;">
+          <span style="display: inline-block; background-color: #da3633; color: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; min-width: 100px;">En Desarrollo</span>
         </td>
-        <td style="padding: 15px; text-align: center;">0</td>
-        <td style="padding: 15px; text-align: center;">0 segundos</td>
+        <td style="padding: 20px; text-align: center; vertical-align: middle;">0</td>
+        <td style="padding: 20px; text-align: center; vertical-align: middle;">-</td>
       </tr>
     </tbody>
   </table>
