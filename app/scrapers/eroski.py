@@ -1,93 +1,101 @@
-import re
+import asyncio
+import httpx
 import json
-import time
+import re
+import html
 from app.models.scraper_base import BaseScraper
+from app.utils.configs_util import EROSKI_HEADERS, EROSKI_CATEGORIES, EROSKI_LOAD_URL, EROSKI_REFERER
 
 class EroskiScraper(BaseScraper):
     def __init__(self):
-        # Usamos el User-Agent exacto de tu inspección
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-            'Accept-Language': 'es-ES,es;q=0.9',
-            'Referer': 'https://supermercado.eroski.es/es/',
-            'Connection': 'keep-alive'
-        }
-        super().__init__("EROSKI", headers)
+        super().__init__("EROSKI", EROSKI_HEADERS)
+        self.re_metrics = re.compile(r"data-metrics='(\{.*?\})'")
+        self.seen_ids = set()
+
+    def _parse_content(self, content):
+        """Extrae productos únicos del contenido HTML devuelto por la API."""
+        if not content or len(content) < 200:
+            return
         
-        # Cookies iniciales según tu CURL para fijar la tienda y el idioma
-        self._session.cookies.update({
-            'supermarket.locale': 'es',
-            'supermarket.direct_access': 'true',
-            'supermarket.ali.shop': '157',  # Tienda Bilbondo/Coruña
-            'supermarket.cookies': '1',
-            'supermarket.data_protection': '1'
-        })
+        matches = self.re_metrics.findall(content)
+        for m in matches:
+            try:
+                clean_json = html.unescape(m)
+                data = json.loads(clean_json)
+                item = data['ecommerce']['items'][0]
+                
+                uid = str(item['item_id'])
+                
+                if uid in self.seen_ids:
+                    continue
+                
+                self.seen_ids.add(uid)
+                self.add_product(
+                    name=item['item_name'],
+                    price=item['price'],
+                    image_url=f"https://supermercado.eroski.es/images/{uid}.jpg",
+                    quantity=item.get('item_variant'),
+                    brand=item.get('item_brand', 'Eroski')
+                )
+            except (KeyError, IndexError, json.JSONDecodeError):
+                continue
+
+    async def _fetch_page(self, client, cat_url, page):
+        """Petición individual por página."""
+        try:
+            payload = {
+                "t:zoneid": "productListZone",
+                "pageNumber": str(page)
+            }
+            r = await client.post(cat_url, data=payload, timeout=20.0)
+            
+            if r.status_code == 200:
+                resp_data = r.json()
+                content = resp_data.get('content', '')
+                self._parse_content(content)
+        except Exception:
+            pass
+
+    async def _async_run(self):
+        """Motor asíncrono principal."""
+        # Límites optimizados para la ráfaga
+        limits = httpx.Limits(max_connections=100, max_keepalive_connections=50)
+        
+        async with httpx.AsyncClient(
+            http2=True, 
+            limits=limits, 
+            headers=self._session.headers,
+            follow_redirects=True
+        ) as client:
+            
+            # Warm-up para cookies
+            try:
+                await client.get(EROSKI_REFERER, timeout=10.0)
+            except Exception:
+                pass
+
+            tasks = []
+            for cat in EROSKI_CATEGORIES:
+                target_url = EROSKI_LOAD_URL.format(cat=cat)
+                for page in range(1, 23):
+                    tasks.append(self._fetch_page(client, target_url, page))
+
+            await asyncio.gather(*tasks)
 
     def scrape(self):
-        # Estas son las subcategorías finales que vimos en tus enlaces
-        # El formato es ID-SLUG
-        categories = [
-            "2060067-aceitunas-y-encurtidos",
-            "2059988-aceite-vinagre-sal-harina-y-pan-rallado",
-            "2060015-conservas-de-pescado",
-            "2059807-leche-batidos-y-bebidas-vegetales"
-        ]
-
+        """Punto de entrada compatible con ScraperManager."""
+        self.products = []
+        self.seen_ids = set()
+        
         try:
-            # Paso 1: "Calentar" la sesión visitando la página principal
-            self._session.get("https://supermercado.eroski.es/es/", timeout=15)
-
-            for cat in categories:
-                # La URL de carga de página que usa el sistema de Tapestry de Eroski
-                cat_id = cat.split('-')[0]
-                url = f"https://supermercado.eroski.es/es/supermarket.productlist:loadpage/{cat_id}/1"
-                
-                # Actualizamos el referer dinámicamente para cada categoría
-                self._session.headers.update({
-                    'Referer': f'https://supermercado.eroski.es/es/supermercado/2059806-alimentacion/{cat}/',
-                    'X-Requested-With': 'XMLHttpRequest'
-                })
-
-                resp = self._session.get(url, timeout=20)
-                
-                if not resp.ok:
-                    self.log.warning(f"Categoría {cat} saltada (Status: {resp.status_code})")
-                    continue
-
-                # Buscamos el objeto JSON que contiene los datos del producto en el HTML devuelto
-                # Eroski inyecta un JSON llamado data-metrics en cada div de producto
-                product_blobs = re.findall(r'data-metrics=["\']({.*?})["\']', resp.text)
-                
-                if not product_blobs:
-                    self.log.debug(f"No se encontraron bloques en {cat}")
-                    continue
-
-                for blob in product_blobs:
-                    try:
-                        # Limpiamos el escape de comillas de HTML
-                        clean_blob = blob.replace('&quot;', '"')
-                        data = json.loads(clean_blob)
-                        
-                        ecommerce = data.get("ecommerce", {})
-                        items = ecommerce.get("items", [])
-                        
-                        if items:
-                            prod = items[0]
-                            self.add_product(
-                                name=f"{prod.get('item_brand', '')} {prod.get('item_name', '')}".strip(),
-                                price=prod.get("price")
-                            )
-                    except Exception:
-                        continue
-                
-                self.log.info(f"Procesada categoría: {cat}")
-                time.sleep(0.5) # Pausa para evitar rate-limit
-
-            # Limpiar duplicados por nombre
-            self.products = list({p['nombre']: p for p in self.products}.values())
-            return self.products
-
+            # Creamos un loop nuevo para este hilo específico
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                loop.run_until_complete(self._async_run())
+            finally:
+                loop.close()
         except Exception as e:
-            self.log.error(f"Fallo crítico en Eroski: {str(e)}")
-            return []
+            self.log.error(f"Error crítico en motor Eroski: {e}")
+            
+        return self.products

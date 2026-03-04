@@ -16,6 +16,12 @@ a = Analysis(
         'requests',
         'certifi',
         'urllib3',
+        'httpx',
+        'httpcore',
+        'anyio',
+        'h2',
+        'hpack',
+        'hyperframe',
         'app.utils.json_util',
         'app.utils.update_util',
         'app.utils.download_util',
@@ -26,8 +32,7 @@ a = Analysis(
         'app.managers.scraper_manager',
         'app.models.scraper_base',
         'app.scrapers.mercadona',
-        'app.scrapers.eroski',
-        'app.scrapers.gadis'
+        'app.scrapers.eroski'
     ],
     hookspath=[],
     runtime_hooks=['pyinstaller_hooks/rthook_certifi.py'],

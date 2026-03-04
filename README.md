@@ -23,39 +23,41 @@ El objetivo del proyecto es desarrollar un comparador de precios funcional, prec
   <h1>🛒 HermesApp</h1>
   <p><i>Monitor de precios inteligente para supermercados españoles</i></p>
 
-  <table style="width: 80%; border-collapse: collapse; text-align: center;">
+  <br />
+
+  <table style="width: 100%; max-width: 800px; border-collapse: separate; border-spacing: 0; border: 1px solid #30363d; border-radius: 10px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
     <thead>
-      <tr style="background-color: #24292e; color: #ffffff;">
-        <th style="padding: 15px; border: 1px solid #30363d;">Supermercado</th>
-        <th style="padding: 15px; border: 1px solid #30363d;">Estado</th>
-        <th style="padding: 15px; border: 1px solid #30363d;">Productos</th>
-        <th style="padding: 15px; border: 1px solid #30363d;">Tiempo</th>
+      <tr style="background-color: #161b22; color: #f0f6fc;">
+        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center;"><b>Supermercado</b></th>
+        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center;"><b>Estado</b></th>
+        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center;"><b>Productos</b></th>
+        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center;"><b>Tiempo</b></th>
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;"><b>Mercadona</b></td>
-        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">
-          <span style="background-color: #238636; color: white; padding: 5px 10px; border-radius: 12px; font-size: 0.9em;">✅ Operativo</span>
+      <tr style="background-color: #0d1117; color: #c9d1d9;">
+        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;"><b>Mercadona ✅</b></td>
+        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;">
+          <code style="color: #3fb950; background: rgba(46, 160, 67, 0.15); padding: 4px 8px; border-radius: 6px; font-weight: bold;">Operativo</code>
         </td>
-        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">~4000+</td>
-        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">2-4 segundos</td>
+        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;">~4400+</td>
+        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;">2-4 segundos</td>
       </tr>
-      <tr>
-        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;"><b>Eroski</b></td>
-        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">
-          <span style="background-color: #d29922; color: white; padding: 5px 10px; border-radius: 12px; font-size: 0.9em;">🔄 En Revisión</span>
+      <tr style="background-color: #161b22; color: #c9d1d9;">
+        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;"><b>Eroski 🔄</b></td>
+        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;">
+          <code style="color: #d29922; background: rgba(187, 128, 9, 0.15); padding: 4px 8px; border-radius: 6px; font-weight: bold;">En Revisión</code>
         </td>
-        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">0</td>
-        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">0 segundos</td>
+        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;">~4100+</td>
+        <td style="padding: 15px; text-align: center; border-bottom: 1px solid #21262d;">15-20 segundos</td>
       </tr>
-      <tr>
-        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;"><b>Gadis</b></td>
-        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">
-          <span style="background-color: #da3633; color: white; padding: 5px 10px; border-radius: 12px; font-size: 0.9em;">❌ En Desarrollo</span>
+      <tr style="background-color: #0d1117; color: #c9d1d9;">
+        <td style="padding: 15px; text-align: center;"><b>Gadis ❌</b></td>
+        <td style="padding: 15px; text-align: center;">
+          <code style="color: #f85149; background: rgba(248, 81, 73, 0.15); padding: 4px 8px; border-radius: 6px; font-weight: bold;">En Desarrollo</code>
         </td>
-        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">0</td>
-        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">0 segundos</td>
+        <td style="padding: 15px; text-align: center;">0</td>
+        <td style="padding: 15px; text-align: center;">0 segundos</td>
       </tr>
     </tbody>
   </table>
@@ -143,7 +145,7 @@ python -m pip install --upgrade pip setuptools wheel
 
 ### Instalar dependencias necesarias
 ```bash
-pip install certifi requests urllib3 pyinstaller
+pip install certifi requests urllib3 pyinstaller httpx h2
 ```
 
 ### Limpiar compilaciones previas
