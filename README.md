@@ -20,39 +20,39 @@ El objetivo del proyecto es desarrollar un comparador de precios funcional, prec
 
 ## 🏪 Supermercados Soportados Actualmente
 <div align="center">
-  <table style="width: 100%; max-width: 800px; border-collapse: separate; border-spacing: 0; border: 1px solid #30363d; border-radius: 12px; overflow: hidden;">
+  <table style="width: 100%; max-width: 800px;">
     <thead>
-      <tr style="background-color: #161b22; color: #f0f6fc;">
-        <th align="center" valign="middle" style="padding: 15px; border-bottom: 2px solid #30363d;">Supermercado</th>
-        <th align="center" valign="middle" style="padding: 15px; border-bottom: 2px solid #30363d;">Estado</th>
-        <th align="center" valign="middle" style="padding: 15px; border-bottom: 2px solid #30363d;">Productos</th>
-        <th align="center" valign="middle" style="padding: 15px; border-bottom: 2px solid #30363d;">Tiempo</th>
+      <tr>
+        <th align="center" valign="middle">Supermercado</th>
+        <th align="center" valign="middle">Estado</th>
+        <th align="center" valign="middle">Productos</th>
+        <th align="center" valign="middle">Tiempo</th>
       </tr>
     </thead>
     <tbody>
-      <tr style="background-color: #0d1117; color: #c9d1d9;">
-        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">Mercadona</td>
-        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d; background-color: #1a3a1f; color: #3fb950;">
-          Operativo
+      <tr>
+        <td align="center" valign="middle">Mercadona</td>
+        <td align="center" valign="middle">
+          <img src="https://img.shields.io/badge/Estado-Operativo-238636?style=flat" alt="Operativo">
         </td>
-        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">~4000+</td>
-        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">2-4 segundos</td>
+        <td align="center" valign="middle">~4000+</td>
+        <td align="center" valign="middle">2-4 segundos</td>
       </tr>
-      <tr style="background-color: #161b22; color: #c9d1d9;">
-        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">Eroski</td>
-        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d; background-color: #3d2e0a; color: #d29922;">
-          En Revisión
+      <tr>
+        <td align="center" valign="middle">Eroski</td>
+        <td align="center" valign="middle">
+          <img src="https://img.shields.io/badge/Estado-En_Revisión-d29922?style=flat" alt="En Revisión">
         </td>
-        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">~4000+</td>
-        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">15-20 segundos</td>
+        <td align="center" valign="middle">~4000+</td>
+        <td align="center" valign="middle">15-20 segundos</td>
       </tr>
-      <tr style="background-color: #0d1117; color: #c9d1d9;">
-        <td align="center" valign="middle" style="padding: 20px;">Gadis</td>
-        <td align="center" valign="middle" style="padding: 20px; background-color: #3d1010; color: #f85149;">
-          En Desarrollo
+      <tr>
+        <td align="center" valign="middle">Gadis</td>
+        <td align="center" valign="middle">
+          <img src="https://img.shields.io/badge/Estado-En_Desarrollo-da3633?style=flat" alt="En Desarrollo">
         </td>
-        <td align="center" valign="middle" style="padding: 20px;">-</td>
-        <td align="center" valign="middle" style="padding: 20px;">-</td>
+        <td align="center" valign="middle">-</td>
+        <td align="center" valign="middle">-</td>
       </tr>
     </tbody>
   </table>
