@@ -20,39 +20,39 @@ El objetivo del proyecto es desarrollar un comparador de precios funcional, prec
 
 ## 🏪 Supermercados Soportados Actualmente
 <div align="center">
-  <table style="width: 100%; max-width: 800px; border-collapse: separate; border-spacing: 0; border: 1px solid #30363d; border-radius: 12px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
+  <table style="width: 100%; max-width: 800px; border-collapse: separate; border-spacing: 0; border: 1px solid #30363d; border-radius: 12px; overflow: hidden;">
     <thead>
       <tr style="background-color: #161b22; color: #f0f6fc;">
-        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center; vertical-align: middle;"><b>Supermercado</b></th>
-        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center; vertical-align: middle;"><b>Estado</b></th>
-        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center; vertical-align: middle;"><b>Productos</b></th>
-        <th style="padding: 15px; border-bottom: 2px solid #30363d; text-align: center; vertical-align: middle;"><b>Tiempo</b></th>
+        <th align="center" valign="middle" style="padding: 15px; border-bottom: 2px solid #30363d;"><b>Supermercado</b></th>
+        <th align="center" valign="middle" style="padding: 15px; border-bottom: 2px solid #30363d;"><b>Estado</b></th>
+        <th align="center" valign="middle" style="padding: 15px; border-bottom: 2px solid #30363d;"><b>Productos</b></th>
+        <th align="center" valign="middle" style="padding: 15px; border-bottom: 2px solid #30363d;"><b>Tiempo</b></th>
       </tr>
     </thead>
     <tbody>
       <tr style="background-color: #0d1117; color: #c9d1d9;">
-        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;"><b>Mercadona</b></td>
-        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;">
-          <span style="display: inline-block; background-color: #238636; color: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; min-width: 100px;">Operativo</span>
+        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;"><b>Mercadona</b></td>
+        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">
+          <b style="background-color: #238636; color: #ffffff; padding: 4px 12px; border-radius: 4px;">Operativo</b>
         </td>
-        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;">~4410</td>
-        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;">3.7s</td>
+        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">~4000+</td>
+        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">2-4 segundos</td>
       </tr>
       <tr style="background-color: #161b22; color: #c9d1d9;">
-        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;"><b>Eroski</b></td>
-        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;">
-          <span style="display: inline-block; background-color: #d29922; color: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; min-width: 100px;">En Revisión</span>
+        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;"><b>Eroski</b></td>
+        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">
+          <b style="background-color: #d29922; color: #ffffff; padding: 4px 12px; border-radius: 4px;">En Revisión</b>
         </td>
-        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;">~4096</td>
-        <td style="padding: 20px; text-align: center; vertical-align: middle; border-bottom: 1px solid #21262d;">19.4s</td>
+        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">~4000+</td>
+        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">15-20 segundos</td>
       </tr>
       <tr style="background-color: #0d1117; color: #c9d1d9;">
-        <td style="padding: 20px; text-align: center; vertical-align: middle;"><b>Gadis</b></td>
-        <td style="padding: 20px; text-align: center; vertical-align: middle;">
-          <span style="display: inline-block; background-color: #da3633; color: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; min-width: 100px;">En Desarrollo</span>
+        <td align="center" valign="middle" style="padding: 20px;"><b>Gadis</b></td>
+        <td align="center" valign="middle" style="padding: 20px;">
+          <b style="background-color: #da3633; color: #ffffff; padding: 4px 12px; border-radius: 4px;">En Desarrollo</b>
         </td>
-        <td style="padding: 20px; text-align: center; vertical-align: middle;">0</td>
-        <td style="padding: 20px; text-align: center; vertical-align: middle;">-</td>
+        <td align="center" valign="middle" style="padding: 20px;">-</td>
+        <td align="center" valign="middle" style="padding: 20px;">-</td>
       </tr>
     </tbody>
   </table>
