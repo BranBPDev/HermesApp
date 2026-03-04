@@ -20,13 +20,45 @@ El objetivo del proyecto es desarrollar un comparador de precios funcional, prec
 
 ## 🏪 Supermercados Soportados Actualmente
 <div align="center">
+  <h1>🛒 HermesApp</h1>
+  <p><i>Monitor de precios inteligente para supermercados españoles</i></p>
 
-| **Supermercado** | **Estado** | **Productos** |
-| :--- | :--- | :--- |
-| **Mercadona** | ✅ Operativo | ~4000+ |
-| **Eroski** | 🔄 En Revisión (Fixing 404s) | 0 |
-| **Gadis** | ❌ En Desarrollo | 0 |
-
+  <table style="width: 80%; border-collapse: collapse; text-align: center;">
+    <thead>
+      <tr style="background-color: #24292e; color: #ffffff;">
+        <th style="padding: 15px; border: 1px solid #30363d;">Supermercado</th>
+        <th style="padding: 15px; border: 1px solid #30363d;">Estado</th>
+        <th style="padding: 15px; border: 1px solid #30363d;">Productos</th>
+        <th style="padding: 15px; border: 1px solid #30363d;">Tiempo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;"><b>Mercadona</b></td>
+        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">
+          <span style="background-color: #238636; color: white; padding: 5px 10px; border-radius: 12px; font-size: 0.9em;">✅ Operativo</span>
+        </td>
+        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">~4000+</td>
+        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">2-4 segundos</td>
+      </tr>
+      <tr>
+        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;"><b>Eroski</b></td>
+        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">
+          <span style="background-color: #d29922; color: white; padding: 5px 10px; border-radius: 12px; font-size: 0.9em;">🔄 En Revisión</span>
+        </td>
+        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">0</td>
+        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">0 segundos</td>
+      </tr>
+      <tr>
+        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;"><b>Gadis</b></td>
+        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">
+          <span style="background-color: #da3633; color: white; padding: 5px 10px; border-radius: 12px; font-size: 0.9em;">❌ En Desarrollo</span>
+        </td>
+        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">0</td>
+        <td style="padding: 20px; border: 1px solid #30363d; vertical-align: middle;">0 segundos</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 ---
