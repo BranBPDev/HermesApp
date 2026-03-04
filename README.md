@@ -70,6 +70,16 @@ Para utilizar HermesApp debes descargar la aplicación desde la sección de **Re
 
 ---
 
+## 💻 Uso del Ejecutable
+
+1. Descarga el `.zip` desde Releases.
+2. Descomprime el contenido en una carpeta vacía para evitar conflictos.
+3. Ejecuta el archivo `.exe`.
+
+La aplicación gestionará automáticamente la verificación de versión, el scraping paralelo y la generación de archivos JSON.
+
+---
+
 ## 🔄 Sistema de Auto-Actualización
 
 HermesApp incorpora un sistema automático de actualización completamente transparente:
@@ -98,16 +108,6 @@ HermesApp incorpora un sistema automático de actualización completamente trans
 * **Concurrencia:** Ejecución paralela mediante ThreadPoolExecutor
 * **Networking:** Uso de requests.Session con pool de conexiones persistentes
 * **Estructura:** Gestión centralizada de rutas y generación estructurada de JSON
-
----
-
-## 💻 Uso del Ejecutable
-
-1. Descarga el `.exe` desde Releases.
-2. Copia el archivo a una carpeta vacía para evitar conflictos.
-3. Ejecuta el archivo `.exe`.
-
-La aplicación gestionará automáticamente la verificación de versión, el scraping paralelo y la generación de archivos JSON.
 
 ---
 
@@ -175,7 +175,7 @@ deactivate
 
 ## 📁 Sistema de Logs
 Para facilitar el mantenimiento, la aplicación genera logs detallados en la carpeta raíz:
-`logs/hermesApp.log`
+`app/logs/hermesApp.log`
 
 * **INFO:** Seguimiento del flujo (Inicios/Finales de scrapers).
 * **DEBUG:** Detalles técnicos (URLs procesadas, inyección de cookies).
