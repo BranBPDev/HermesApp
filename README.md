@@ -32,24 +32,24 @@ El objetivo del proyecto es desarrollar un comparador de precios funcional, prec
     <tbody>
       <tr style="background-color: #0d1117; color: #c9d1d9;">
         <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">Mercadona</td>
-        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">
-          <span style="background-color: #238636; color: #ffffff; padding: 4px 12px; border-radius: 4px;">Operativo</span>
+        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d; background-color: #1a3a1f; color: #3fb950;">
+          Operativo
         </td>
         <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">~4000+</td>
         <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">2-4 segundos</td>
       </tr>
       <tr style="background-color: #161b22; color: #c9d1d9;">
         <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">Eroski</td>
-        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">
-          <span style="background-color: #d29922; color: #ffffff; padding: 4px 12px; border-radius: 4px;">En Revisión</span>
+        <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d; background-color: #3d2e0a; color: #d29922;">
+          En Revisión
         </td>
         <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">~4000+</td>
         <td align="center" valign="middle" style="padding: 20px; border-bottom: 1px solid #21262d;">15-20 segundos</td>
       </tr>
       <tr style="background-color: #0d1117; color: #c9d1d9;">
         <td align="center" valign="middle" style="padding: 20px;">Gadis</td>
-        <td align="center" valign="middle" style="padding: 20px;">
-          <span style="background-color: #da3633; color: #ffffff; padding: 4px 12px; border-radius: 4px;">En Desarrollo</span>
+        <td align="center" valign="middle" style="padding: 20px; background-color: #3d1010; color: #f85149;">
+          En Desarrollo
         </td>
         <td align="center" valign="middle" style="padding: 20px;">-</td>
         <td align="center" valign="middle" style="padding: 20px;">-</td>
