@@ -1,73 +1,45 @@
-import concurrent.futures
-import time
-from typing import Dict, Type
-from app.models.scraper_base import BaseScraper
-from app.utils.json_util import save_json
-from app.utils.paths_util import PRODUCT_PATHS
-from app.utils.logger_util import HermesLogger  # Importamos nuestro nuevo util
-from app.scrapers.mercadona import MercadonaScraper
-from app.scrapers.gadis import GadisScraper
-from app.scrapers.eroski import EroskiScraper
+import time, concurrent.futures
+from pathlib import Path
 
-# Logger central para el manager
+from app.utils.paths_util import PRODUCT_PATHS, SCRAPERS_DIR
+from app.utils.dates_util import get_current_date_str
+from app.utils.logger_util import HermesLogger 
+from app.scrapers.mercadona import MercadonaScraper
+from app.scrapers.eroski import EroskiScraper
+from app.scrapers.gadis import GadisScraper
+from app.utils.json_util import save_json
+
 log = HermesLogger.get_logger("SCRAPER_MANAGER")
 
-SCRAPER_REGISTRY: Dict[str, Type[BaseScraper]] = {
+SCRAPER_REGISTRY = {
     "mercadona": MercadonaScraper,
     "gadis": GadisScraper,
     "eroski": EroskiScraper
 }
 
-def _execute_scraper(name: str):
-    """Lógica interna de ejecución con logging integrado."""
-    if name not in SCRAPER_REGISTRY:
-        error_msg = f"Scraper {name} no registrado en el REGISTRY."
-        log.error(error_msg)
-        return f"❌ {name.upper()}: No registrado."
-    
-    start_time = time.time()
-    log.info(f"Iniciando proceso para: {name.upper()}")
+def _execute_scraper(name):
+    # Generamos el path de hoy directamente
+    today = Path(f"{PRODUCT_PATHS[name]}_{get_current_date_str()}.json")
 
+    # Validación ultra-rápida por metadatos (evitamos abrir el JSON)
+    if today.exists() and today.stat().st_size > 0:
+        return f"⏭️ {name.upper()}: Al día"
+
+    start = time.time()
     try:
-        # Instanciamos el scraper dinámicamente
-        scraper_inst = SCRAPER_REGISTRY[name]()
-        
-        # Ejecutamos el scrape (que ya solo se preocupa de los datos)
-        data = scraper_inst.scrape()
-        
-        duration = round(time.time() - start_time, 2)
-
-        if data and len(data) > 0:
-            save_json(PRODUCT_PATHS[name], data)
-            success_msg = f"{name.upper()}: {len(data)} prods recuperados con éxito"
+        if data := SCRAPER_REGISTRY[name]().scrape():
+            # Limpieza: iteramos y borramos de una (solo lo que empiece por el prefijo)
+            [f.unlink() for f in SCRAPERS_DIR.iterdir() if f.name.startswith(PRODUCT_PATHS[name].name) and f != today]
             
-            # Logueamos el éxito en el archivo con detalle de tiempo
-            log.info(f"{success_msg} en {duration}s")
-            
-            # Retornamos para la consola (formato limpio)
-            return f"✅ {name.upper()}: {len(data)} prods en {duration}s"
-        
-        log.warning(f"{name.upper()}: Finalizado sin datos tras {duration}s")
+            save_json(today, data)
+            return f"✅ {name.upper()}: {len(data)} prods ({round(time.time() - start, 2)}s)"
         return f"⚠️ {name.upper()}: Sin datos"
-
-    except Exception as e:
-        # Capturamos el error con el traceback completo en el log
-        log.exception(f"Error crítico en el scraper {name}")
-        return f"❌ {name.upper()}: Error crítico (ver hermes.log)"
+    except Exception:
+        log.exception(f"Error en {name}")
+        return f"❌ {name.upper()}: Error"
 
 def run_all_scrapers_parallel():
-    """Ejecuta todos los scrapers y maneja la salida de consola de forma ordenada."""
-    log.info("--- NUEVA SESIÓN DE SCRAPPING EN PARALELO ---")
-    
-    # Usamos ThreadPoolExecutor para no bloquear el hilo principal
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(SCRAPER_REGISTRY)) as executor:
-        # Mapeamos las ejecuciones
-        futures = {executor.submit(_execute_scraper, name): name for name in SCRAPER_REGISTRY}
-        
-        # Recogemos resultados conforme terminan
-        for future in concurrent.futures.as_completed(futures):
-            result = future.result()
-            # Este print es el único que verá el usuario en consola
-            print(result)
-
-    log.info("--- SESIÓN FINALIZADA ---")
+    log.info("--- SCRAPPING ---")
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        for f in concurrent.futures.as_completed([executor.submit(_execute_scraper, n) for n in SCRAPER_REGISTRY]):
+            print(f.result())

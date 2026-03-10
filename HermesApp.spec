@@ -10,7 +10,8 @@ a = Analysis(
     pathex=[project_root],
     binaries=[],
     datas=[
-        (certifi.where(), 'certifi'), # Certificados SSL
+        (certifi.where(), 'certifi'), 
+        # Eliminada la referencia a app/data para evitar el error de compilación
     ],
     hiddenimports=[
         'requests',
@@ -32,10 +33,11 @@ a = Analysis(
         'app.managers.scraper_manager',
         'app.models.scraper_base',
         'app.scrapers.mercadona',
+        'app.scrapers.gadis',
         'app.scrapers.eroski'
     ],
     hookspath=[],
-    runtime_hooks=['pyinstaller_hooks/rthook_certifi.py'],
+    runtime_hooks=[],
     excludes=[],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
@@ -57,7 +59,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True,
+    console=True, 
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
