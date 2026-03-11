@@ -11,33 +11,35 @@ a = Analysis(
     binaries=[],
     datas=[
         (certifi.where(), 'certifi'), 
-        # Eliminada la referencia a app/data para evitar el error de compilación
     ],
     hiddenimports=[
-        'requests',
-        'certifi',
-        'urllib3',
-        'httpx',
-        'httpcore',
-        'anyio',
-        'h2',
-        'hpack',
-        'hyperframe',
-        'app.utils.json_util',
-        'app.utils.update_util',
-        'app.utils.download_util',
-        'app.utils.paths_util',
-        'app.utils.zip_util',
-        'app.utils.logger_util',
-        'app.utils.configs_util',
-        'app.managers.scraper_manager',
+        # Core & Networking
+        'requests', 'certifi', 'urllib3', 'httpx', 'httpcore', 
+        'anyio', 'h2', 'hpack', 'hyperframe',
+        
+        # App Utils
+        'app.utils.json_util', 'app.utils.update_util', 
+        'app.utils.download_util', 'app.utils.paths_util', 
+        'app.utils.zip_util', 'app.utils.logger_util', 
+        'app.utils.configs_util', 'app.utils.dates_util',
+        
+        # App Daos
+        'app.daos.product_dao',
+        
+        # App Models
         'app.models.scraper_base',
-        'app.scrapers.mercadona',
-        'app.scrapers.gadis',
-        'app.scrapers.eroski'
+        
+        # App Scrapers
+        'app.scrapers.mercadona', 'app.scrapers.gadis', 'app.scrapers.eroski',
+        
+        # App Managers
+        'app.managers.scraper_manager', 
+        'app.managers.product_manager', 
+        'app.managers.app_manager'
     ],
     hookspath=[],
-    runtime_hooks=[],
+    # El hook rthook_certifi.py debe estar en la carpeta pyinstaller_hooks en la raíz
+    runtime_hooks=[os.path.join('pyinstaller_hooks', 'rthook_certifi.py')],
     excludes=[],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,

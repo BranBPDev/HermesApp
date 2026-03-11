@@ -13,7 +13,6 @@ class EroskiScraper(BaseScraper):
         self.seen_ids = set()
 
     def _parse_content(self, content):
-        """Extrae productos únicos del contenido HTML devuelto por la API."""
         if not content or len(content) < 200:
             return
         
@@ -23,7 +22,6 @@ class EroskiScraper(BaseScraper):
                 clean_json = html.unescape(m)
                 data = json.loads(clean_json)
                 item = data['ecommerce']['items'][0]
-                
                 uid = str(item['item_id'])
                 
                 if uid in self.seen_ids:
@@ -41,34 +39,26 @@ class EroskiScraper(BaseScraper):
                 continue
 
     async def _fetch_page(self, client, cat_url, page):
-        """Petición individual por página."""
         try:
             payload = {
                 "t:zoneid": "productListZone",
                 "pageNumber": str(page)
             }
             r = await client.post(cat_url, data=payload, timeout=20.0)
-            
             if r.status_code == 200:
                 resp_data = r.json()
-                content = resp_data.get('content', '')
-                self._parse_content(content)
+                self._parse_content(resp_data.get('content', ''))
         except Exception:
             pass
 
     async def _async_run(self):
-        """Motor asíncrono principal."""
-        # Límites optimizados para la ráfaga
         limits = httpx.Limits(max_connections=100, max_keepalive_connections=50)
-        
         async with httpx.AsyncClient(
             http2=True, 
             limits=limits, 
             headers=self._session.headers,
             follow_redirects=True
         ) as client:
-            
-            # Warm-up para cookies
             try:
                 await client.get(EROSKI_REFERER, timeout=10.0)
             except Exception:
@@ -83,18 +73,17 @@ class EroskiScraper(BaseScraper):
             await asyncio.gather(*tasks)
 
     def scrape(self):
-        """Punto de entrada compatible con ScraperManager."""
         self.products = []
         self.seen_ids = set()
-        
         try:
-            # Creamos un loop nuevo para este hilo específico
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             try:
                 loop.run_until_complete(self._async_run())
             finally:
                 loop.close()
+            # Log de finalización (Solo al log)
+            self.log.info(f"Eroski completado: {len(self.products)} productos.")
         except Exception as e:
             self.log.error(f"Error crítico en motor Eroski: {e}")
             

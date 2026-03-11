@@ -48,7 +48,7 @@ def perform_update():
             f"Start-Sleep -Seconds 1; "
             f"'--- PS_UPDATER: Relanzando aplicacion ---' | Out-File '{log_path}' -Append -Encoding utf8; "
             f"Get-ChildItem Env: | Where-Object {{ $_.Name -like '*PYI*' -or $_.Name -like '*MEI*' }} | ForEach-Object {{ Remove-Item $_.PSPath }}; "
-            f"Start-Process -FilePath 'cmd.exe' -ArgumentList '/k', '\"{exe_path}\"' -WorkingDirectory '{BASE_DIR}'"
+            f"Start-Process -FilePath '{exe_path}' -WorkingDirectory '{BASE_DIR}'"
         )
 
         subprocess.Popen(

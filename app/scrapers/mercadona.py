@@ -1,40 +1,29 @@
-import requests # Añade este import
+import requests
 from app.models.scraper_base import BaseScraper
 from app.utils.configs_util import COMMON_HEADERS, MERCADONA_API_INDEX, MERCADONA_API_CAT
 from concurrent.futures import ThreadPoolExecutor
 
 class MercadonaScraper(BaseScraper):
     def __init__(self):
+        # Usamos el init de Base para heredar la sesión configurada y headers
         super().__init__("MERCADONA", COMMON_HEADERS)
-        # Forzamos una sesión nueva y simple para evitar conflictos con el parche
-        self._session = requests.Session()
-        self._session.headers.update(COMMON_HEADERS)
 
     def scrape(self):
-        # 1. Obtener índice (categorías)
-        try:
-            resp = self._session.get(MERCADONA_API_INDEX, timeout=10)
-            if not resp.ok:
-                self.log.error(f"Error Mercadona Index: {resp.status_code}")
-                return []
-            index = resp.json()
-        except Exception as e:
-            self.log.error(f"Fallo conexión Mercadona: {e}")
+        # 1. Obtener índice usando la sesión heredada
+        index = self.get_json(MERCADONA_API_INDEX)
+        if not index:
+            # El error 403 o de red ya lo registra BaseScraper en el log
             return []
 
         cat_ids = [c["id"] for res in index.get("results", []) for c in res.get("categories", [])]
         
-        # 2. Función interna para el worker
+        # 2. Worker para paralelo
         def fetch_cat(cat_id):
             url = MERCADONA_API_CAT.format(cat_id=cat_id)
-            try:
-                r = self._session.get(url, timeout=10)
-                return r.json() if r.ok else None
-            except:
-                return None
+            return self.get_json(url)
 
         # 3. Descarga paralela
-        with ThreadPoolExecutor(max_workers=5) as exe: # Bajamos a 5 por seguridad
+        with ThreadPoolExecutor(max_workers=5) as exe:
             responses = list(exe.map(fetch_cat, cat_ids))
 
         # 4. Procesamiento
@@ -49,5 +38,5 @@ class MercadonaScraper(BaseScraper):
                         quantity=i.get("unit_size")
                     )
         
-        self.log.info(f"Mercadona completado: {len(self.products)} productos")
+        self.log.info(f"Mercadona finalizado: {len(self.products)} productos")
         return self.products
