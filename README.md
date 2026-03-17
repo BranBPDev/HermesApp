@@ -188,7 +188,7 @@ deactivate
 ---
 
 ## 🔑 Configuración de Variables de Entorno
-El proyecto utiliza PostgreSQL alojado en Neon.tech para la persistencia de datos en la nube. Para que la aplicación funcione correctamente en desarrollo, debes crear un archivo .env en la raíz del proyecto.
+El proyecto utiliza PostgreSQL alojado en [**Neon.tech**](https://neon.com/) para la persistencia de datos en la nube. Para que la aplicación funcione correctamente en desarrollo, debes crear un archivo .env en la raíz del proyecto.
 
 1. Crea el archivo .env:
 ```bash
