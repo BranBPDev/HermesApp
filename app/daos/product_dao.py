@@ -1,46 +1,86 @@
-import unicodedata
-from typing import Dict, List
-from app.utils.json_util import read_json
-from app.utils.paths_util import PRODUCT_PATHS, SCRAPERS_DIR
-from app.utils.dates_util import get_current_date_str
+import psycopg2.extras
+from app.managers.db_manager import DBManager
 from app.utils.logger_util import HermesLogger
+from datetime import date
 
 class ProductDAO:
     def __init__(self):
         self.log = HermesLogger.get_logger("PRODUCT_DAO")
-        self._cache: Dict[str, List[dict]] = {}
+        self.db = DBManager()
 
-    def load_data(self):
-        today = get_current_date_str()
-        for store, prefix in PRODUCT_PATHS.items():
-            path = SCRAPERS_DIR / f"{prefix.name}_{today}.json"
-            if path.exists():
-                try:
-                    self._cache[store] = read_json(path)
-                    self.log.info(f"Cargados {len(self._cache[store])} productos de {store}")
-                except Exception as e:
-                    self.log.error(f"Error en {store}: {e}")
-                    self._cache[store] = []
-            else:
-                self._cache[store] = []
-
-    def _normalize(self, text: str) -> str:
-        if not text: return ""
-        return "".join(
-            c for c in unicodedata.normalize('NFD', str(text).lower())
-            if unicodedata.category(c) != 'Mn'
-        )
-
-    def find_all_by_query(self, query: str) -> Dict[str, List[dict]]:
-        """Busca y devuelve todos los match ordenados por precio."""
-        terms = self._normalize(query).split()
-        results = {}
-
-        for store, products in self._cache.items():
-            matched = [
-                p for p in products
-                if all(t in self._normalize(p.get('nombre', '')) for t in terms)
-            ]
-            results[store] = sorted(matched, key=lambda x: x.get('precio', 999.0))
+    def upsert_batch(self, store_name: str, products: list):
+        """
+        Inserta o actualiza productos masivamente filtrando duplicados en el origen.
+        """
+        store_res = self.db.execute_query("SELECT id FROM store WHERE name = %s", (store_name.lower(),), fetch=True)
+        if not store_res:
+            self.log.error(f"No se encontró la tienda {store_name} en la base de datos.")
+            return
         
-        return results
+        store_id = store_res[0]['id']
+        today = date.today()
+        
+        # --- FILTRO DE DUPLICADOS (Previene error de PostgreSQL) ---
+        unique_products = {}
+        for p in products:
+            nombre = p.get('nombre')
+            if nombre and nombre not in unique_products:
+                unique_products[nombre] = p
+        
+        clean_list = list(unique_products.values())
+        # -----------------------------------------------------------
+
+        query = """
+            INSERT INTO product (store_id, name, price, quantity, unit_type, image_url, last_update)
+            VALUES %s
+            ON CONFLICT (name, store_id) 
+            DO UPDATE SET 
+                last_update = CASE 
+                    WHEN product.price <> EXCLUDED.price THEN EXCLUDED.last_update 
+                    ELSE product.last_update 
+                END,
+                image_url = EXCLUDED.image_url,
+                quantity = EXCLUDED.quantity,
+                unit_type = EXCLUDED.unit_type,
+                price = EXCLUDED.price;
+        """
+        
+        conn = self.db._get_connection()
+        if not conn: return
+        
+        try:
+            with conn.cursor() as cur:
+                data_list = [
+                    (
+                        store_id, 
+                        p['nombre'], 
+                        p['precio'], 
+                        p['cantidad'], 
+                        p['tipo_unidad'], 
+                        p['imagen'],
+                        today
+                    )
+                    for p in clean_list
+                ]
+                psycopg2.extras.execute_values(cur, query, data_list)
+                
+            conn.commit()
+            self.log.info(f"✅ CLOUD: {store_name.upper()} sincronizado ({len(clean_list)} productos únicos).")
+            
+        except Exception as e:
+            self.log.error(f"❌ Error en upsert_batch para {store_name}: {e}")
+            conn.rollback()
+        finally:
+            conn.close()
+
+    def search_by_name(self, query_text: str):
+        sql = """
+            SELECT p.*, s.name as store_name
+            FROM product p
+            JOIN store s ON p.store_id = s.id
+            WHERE p.name ILIKE %s
+            ORDER BY p.price ASC
+            LIMIT 100
+        """
+        formatted_query = f"%{query_text.replace(' ', '%')}%"
+        return self.db.execute_query(sql, (formatted_query,), fetch=True)

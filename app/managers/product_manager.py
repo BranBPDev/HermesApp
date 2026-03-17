@@ -1,34 +1,40 @@
 from app.daos.product_dao import ProductDAO
-from app.utils.logger_util import HermesLogger
 
 class ProductManager:
     def __init__(self):
-        self.log = HermesLogger.get_logger("PRODUCT_MANAGER")
-        self._dao = ProductDAO()
-        self._last_results = {}
-        self._offsets = {}
-        self._page_size = 5
+        self.dao = ProductDAO()
+        self.all_results = []
+        self.current_page = 0
+        self.page_size = 10
 
-    def initialize_data(self):
-        self._dao.load_data()
+    def sync_with_cloud(self, store_name, products):
+        """
+        Mantiene la compatibilidad con el ScraperManager.
+        Envía los datos recolectados directamente al DAO.
+        """
+        self.dao.upsert_batch(store_name, products)
 
-    def search(self, query: str):
-        """Inicia búsqueda y devuelve los primeros resultados."""
-        self._last_results = self._dao.find_all_by_query(query)
-        self._offsets = {store: 0 for store in self._last_results}
+    def search(self, query):
+        """
+        Busca en la nube y prepara la lista global ordenada por precio.
+        """
+        self.current_page = 0
+        self.all_results = self.dao.search_by_name(query)
         return self.get_next_page()
 
     def get_next_page(self):
-        """Obtiene el siguiente bloque de la búsqueda actual."""
-        page = {}
-        for store, products in self._last_results.items():
-            start = self._offsets[store]
-            end = start + self._page_size
-            page[store] = products[start:end]
-            self._offsets[store] = end
-        return page
+        """
+        Devuelve el siguiente bloque de 10 productos (mezclando tiendas).
+        """
+        start = self.current_page * self.page_size
+        end = start + self.page_size
+        page_items = self.all_results[start:end]
+        self.current_page += 1
+        return page_items
 
-    def has_more(self) -> bool:
-        """Comprueba si queda algo por mostrar en algún supermercado."""
-        return any(self._offsets[store] < len(self._last_results[store]) 
-                   for store in self._last_results)
+    def has_more(self):
+        """
+        Verifica si quedan más productos en la lista global.
+        """
+        # Usamos el puntero de la página anterior para ver si hay más
+        return (self.current_page * self.page_size) < len(self.all_results)

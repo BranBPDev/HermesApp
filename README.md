@@ -8,11 +8,11 @@
 
 HermesApp automatiza el flujo completo de información:
 
-* **Recolección:** Scraping multihilo desde múltiples supermercados.
-* **Normalización:** Estructuración de datos heterogéneos en un esquema único.
-* **Persistencia:** Generación de archivos en formato JSON para análisis.
-* **Mantenimiento:** Sistema de auto-actualización integrado desde GitHub.
-* **Portabilidad:** Distribución como ejecutable `.exe` sin dependencias externas.
+* **Autenticación:** Sistema de usuarios con contraseñas seguras (bcrypt).
+* **Recolección:** Scraping multihilo sincronizado en tiempo real con la nube.
+* **Sincronización:** Operaciones masivas (Upsert) en base de datos PostgreSQL (Neon DB).
+* **Comparación:** Búsqueda unificada que mezcla y ordena productos de diferentes tiendas por precio.
+* **Carrito de compra:** Gestión de listas personalizadas con cálculo de totales por usuario.
 
 El objetivo del proyecto es desarrollar un comparador de precios funcional, preciso y escalable.
 
@@ -64,7 +64,7 @@ El objetivo del proyecto es desarrollar un comparador de precios funcional, prec
 
 Para utilizar HermesApp debes descargar la aplicación desde la sección de **Releases**:
 
-👉 [**Descargar última versión en Releases**](https://github.com/BranBPDev/HermesApp/releases/latest)
+👉 [**Descargar última versión en Releases**](https://github.com/BranBPDev/HermesApp/releases/latest/download/HermesApp.zip)
 
 > ⚠️ **No descargues el código fuente (ZIP desde el botón "Code")** para uso normal. La versión de Releases incluye el ejecutable listo para usar y el sistema de auto-actualización.
 
@@ -77,6 +77,17 @@ Para utilizar HermesApp debes descargar la aplicación desde la sección de **Re
 3. Ejecuta el archivo `.exe`.
 
 La aplicación gestionará automáticamente la verificación de versión, el scraping paralelo y la generación de archivos JSON.
+
+---
+
+## ⌨️ Comandos de la Aplicación
+
+Una vez iniciada la sesión, puedes usar los siguientes comandos en el buscador:
+* `carrito`: Visualiza tus productos guardados y el total estimado.
+* `vaciar`: Limpia por completo tu lista de la compra.
+* `+`: Carga los siguientes 10 resultados de la última búsqueda.
+* `salir` / `exit` / `q`: Cierra la aplicación de forma segura.
+* `[Número]`: Al ver resultados, escribe el ID del producto para añadirlo al carrito.
 
 ---
 
@@ -94,13 +105,16 @@ HermesApp incorpora un sistema automático de actualización completamente trans
 
 **HermesApp/**  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── ⚓ **pyinstaller_hooks/** — Hooks personalizados para el empaquetado  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 🖼️ **logo.ico** — Icono oficial del ejecutable  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 🐍 **main.py** — Punto de entrada de la aplicación  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 📄 **HermesApp.spec** — Configuración para PyInstaller  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 🔐 **.env** — Configuración de base de datos (No incluido en Git)  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── 📂 **app/**  
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── ⚙️ **managers/** — Gestión de ejecución paralela (*Thread Management*)  
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 📐 **models/** — Clases base y contratos de scrapers  
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 🕷️ **scrapers/** — Implementaciones específicas por supermercado  
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── 🛠️ **utils/** — Utilidades (descarga, JSON, actualización, rutas)
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 🗄️ **daos/** — Acceso a datos (UserDAO, ProductDAO, CartDAO)  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── ⚙️ **managers/** — Lógica de negocio (Auth, App, DB, Product, Scraper)  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 📐 **models/** — Contratos y esquemas de datos  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 🕷️ **scrapers/** — Motores de extracción por supermercado  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── 🛠️ **utils/** — SSL Patches, Logs, Rutas y Actualización  
 
 ### Características técnicas principales
 
@@ -140,7 +154,7 @@ python -m pip install --upgrade pip setuptools wheel
 
 ### Instalar dependencias necesarias
 ```bash
-pip install certifi requests urllib3 pyinstaller httpx h2
+pip install certifi requests urllib3 pyinstaller httpx h2 psycopg2-binary bcrypt python-dotenv
 ```
 
 ### Limpiar compilaciones previas
@@ -173,6 +187,23 @@ deactivate
 
 ---
 
+## 🔑 Configuración de Variables de Entorno
+El proyecto utiliza PostgreSQL alojado en Neon.tech para la persistencia de datos en la nube. Para que la aplicación funcione correctamente en desarrollo, debes crear un archivo .env en la raíz del proyecto.
+
+1. Crea el archivo .env:
+```bash
+touch .env
+```
+
+2. Añade tu cadena de conexión (puedes obtenerla en tu consola de Neon):
+```text
+DATABASE_URL=postgresql://[user]:[password]@[host]/neondb?sslmode=require
+```
+
+🛡️ Seguridad: El archivo .env está incluido en el .gitignore para evitar la exposición accidental de credenciales en el repositorio público.
+
+---
+
 ## 📁 Sistema de Logs
 Para facilitar el mantenimiento, la aplicación genera logs detallados en la carpeta raíz:
 `app/logs/hermesApp.log`
@@ -187,11 +218,13 @@ Para facilitar el mantenimiento, la aplicación genera logs detallados en la car
 
 HermesApp se encuentra en desarrollo activo.
 
-Próximas metas:
-
-* 🎨 Interfaz de Usuario (GUI)
-* ⚖️ Comparador Estructurado
-* 🔍 Búsqueda Avanzada
+Metas del proyecto:
+* ✅ Aplicación auto-actualizable.
+* ✅ Base de Datos Cloud: PostgreSQL integrado.
+* ✅ Sistema de Usuarios: Login y registro funcional.
+* ✅ Carrito Multi-tienda: Comparación y suma de productos de distintas fuentes.
+* 🚧 Interfaz de Usuario (GUI): En planificación.
+* 🚧 Gadis: Scraper en fase de re-estructuración.
 
 ---
 

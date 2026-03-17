@@ -4,6 +4,9 @@ import sys
 # BASE DIRECTORY (Entorno ejecutable)
 BASE_DIR = Path(sys.executable).parent
 
+# CONFIGURATION
+ENV_PATH = BASE_DIR / ".env"
+
 # LOGS
 LOGS_DIR = BASE_DIR / "app" / "logs"
 LOGS_DIR.mkdir(parents=True, exist_ok=True)

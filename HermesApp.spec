@@ -11,11 +11,15 @@ a = Analysis(
     binaries=[],
     datas=[
         (certifi.where(), 'certifi'), 
+        ('.env', '.'), 
     ],
     hiddenimports=[
         # Core & Networking
         'requests', 'certifi', 'urllib3', 'httpx', 'httpcore', 
-        'anyio', 'h2', 'hpack', 'hyperframe',
+        'anyio', 'h2', 'hpack', 'hyperframe', 'python-dotenv',
+        
+        # Database & Auth
+        'psycopg2', 'psycopg2.extensions', 'bcrypt',
         
         # App Utils
         'app.utils.json_util', 'app.utils.update_util', 
@@ -24,10 +28,7 @@ a = Analysis(
         'app.utils.configs_util', 'app.utils.dates_util',
         
         # App Daos
-        'app.daos.product_dao',
-        
-        # App Models
-        'app.models.scraper_base',
+        'app.daos.product_dao', 'app.daos.user_dao', 'app.daos.cart_dao', # <--- Añadido cart_dao
         
         # App Scrapers
         'app.scrapers.mercadona', 'app.scrapers.gadis', 'app.scrapers.eroski',
@@ -35,10 +36,10 @@ a = Analysis(
         # App Managers
         'app.managers.scraper_manager', 
         'app.managers.product_manager', 
-        'app.managers.app_manager'
+        'app.managers.app_manager',
+        'app.managers.auth_manager'
     ],
     hookspath=[],
-    # El hook rthook_certifi.py debe estar en la carpeta pyinstaller_hooks en la raíz
     runtime_hooks=[os.path.join('pyinstaller_hooks', 'rthook_certifi.py')],
     excludes=[],
     win_no_prefer_redirects=False,
@@ -67,4 +68,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['logo.ico'], # <--- AQUÍ se vincula el icono propio
 )
