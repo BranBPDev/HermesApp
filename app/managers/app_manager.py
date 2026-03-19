@@ -15,7 +15,9 @@ class AppManager:
         self.last_viewed_results = []
 
     def start(self):
+        """Inicia el flujo principal de la aplicación."""
         try:
+            # 1. Verificación de actualizaciones
             if not is_latest_version():
                 print("\n[!] Nueva versión detectada. Actualizando...")
                 perform_update()
@@ -23,9 +25,14 @@ class AppManager:
         except Exception as e:
             self.log.error(f"Error en auto-update: {e}")
 
+        # 2. Scrapers en segundo plano
         threading.Thread(target=run_all_scrapers_parallel, daemon=True).start()
+        
+        # 3. Autenticación
         self._show_auth_menu()
         self._clear_screen()
+        
+        # 4. Bucle principal
         self._run_main_loop()
 
     def _clear_screen(self):
@@ -54,7 +61,11 @@ class AppManager:
                 os._exit(0)
 
     def _run_main_loop(self):
-        print("\n" + "-"*50 + f"\n Sesión: {self.auth.username} | 'salir', 'carrito', 'vaciar', '+'\n" + "-"*50)
+        """Maneja la lógica de comandos y búsqueda."""
+        print("\n" + "-"*50)
+        print(f" Sesión: {self.auth.username.upper()}")
+        print(" Comandos: 'salir', 'carrito', 'ahorro', 'vaciar', '+'")
+        print("-"*50)
         
         while True:
             try:
@@ -63,14 +74,16 @@ class AppManager:
 
                 cmd = query.lower()
 
-                # 1. Comandos de salida
                 if cmd in ['salir', 'exit', 'q']:
                     print("👋 Saliendo de Hermes...")
                     os._exit(0)
                 
-                # 2. Gestión de Carrito
                 if cmd == 'carrito':
                     self._show_cart()
+                    continue
+
+                if cmd == 'ahorro':
+                    self._show_savings()
                     continue
 
                 if cmd == 'vaciar':
@@ -79,7 +92,6 @@ class AppManager:
                     print("🗑️ Carrito vaciado correctamente.")
                     continue
 
-                # 3. Paginación
                 if query == '+':
                     if self.pm.has_more(): 
                         self._render_results(self.pm.get_next_page())
@@ -87,13 +99,16 @@ class AppManager:
                         print("  [INFO] No hay más resultados.")
                     continue
 
-                # 4. Búsqueda normal
                 self._render_results(self.pm.search(query))
 
             except (KeyboardInterrupt, EOFError): 
                 os._exit(0)
+            except Exception as e:
+                self.log.error(f"Error inesperado en el loop principal: {e}")
+                print(f"❌ Ha ocurrido un error: {e}")
 
     def _render_results(self, results):
+        """Muestra los resultados de búsqueda en tabla."""
         if not results:
             print("  ❌ Sin coincidencias en la nube.")
             return
@@ -115,11 +130,13 @@ class AppManager:
             self._add_to_cart(results[int(res)-1])
 
     def _add_to_cart(self, product):
+        """Añade un producto al carrito del usuario actual."""
         from app.daos.cart_dao import CartDAO
         CartDAO().add_to_cart(self.auth.current_user_id, product['id'])
         print(f"🛒 Añadido: {product['name']} ({product['store_name']})")
 
     def _show_cart(self):
+        """Muestra el contenido actual del carrito y el total."""
         from app.daos.cart_dao import CartDAO
         items = CartDAO().get_user_cart(self.auth.current_user_id)
         if not items:
@@ -127,14 +144,49 @@ class AppManager:
             return
         
         print("\n🛒 TU LISTA DE LA COMPRA:")
-        print("-" * 45)
+        print("-" * 55)
         total = 0
         for i in items:
             sub = float(i['subtotal'])
             total += sub
-            # Formateo de nombre para que no rompa la línea del subtotal
             name_trunc = (i['name'][:30] + '...') if len(i['name']) > 30 else i['name']
             print(f" • {i['quantity']}x {name_trunc:<33} ({i['store_name'].upper():^10}) -> {round(sub, 2):>6}€")
         
-        print("-" * 45)
+        print("-" * 55)
         print(f"💰 TOTAL ESTIMADO: {round(total, 2)}€")
+        print("💡 Escribe 'ahorro' para ver si puedes bajar este total.")
+
+    def _show_savings(self):
+        """Ejecuta el comparador inteligente de precios basado en el carrito."""
+        from app.daos.cart_dao import CartDAO
+        print("\n🔍 Analizando precios en otras tiendas...")
+        
+        try:
+            suggestions = CartDAO().get_savings_suggestions(self.auth.current_user_id)
+            
+            if not suggestions:
+                print("\n✨ ¡Excelente! No hemos encontrado alternativas más baratas para tu carrito actual.")
+                return
+
+            print("\n💡 OPORTUNIDADES DE AHORRO:")
+            print("-" * 65)
+            ahorro_total_posible = 0
+            
+            for s in suggestions:
+                # CORRECCIÓN: Usar los nombres de columna exactos definidos en cart_dao.py
+                orig_price = s['original_price_norm']
+                sugg_price = s['suggestion_price_norm']
+                ahorro_unitario = float(s['saving_per_unit'])
+                
+                print(f"En carrito: {s['original_name'][:35]} ({orig_price}€/u)")
+                print(f"👉 Sugerencia: {s['suggestion_name'][:35]} ({sugg_price}€/u)")
+                print(f"   Tienda:    {s['store_alt'].upper()}")
+                print(f"   Ahorras:   {round(ahorro_unitario, 2)}€ por unidad")
+                print("-" * 40)
+                ahorro_total_posible += ahorro_unitario
+
+            print(f"💰 AHORRO POTENCIAL TOTAL: {round(ahorro_total_posible, 2)}€")
+            print("-" * 65)
+        except Exception as e:
+            self.log.error(f"Error en sección ahorro: {e}")
+            print(f"❌ Error al procesar sugerencias: {e}")

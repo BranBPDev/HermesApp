@@ -32,10 +32,12 @@ class BaseScraper(ABC):
 
     def add_product(self, name, price, **kwargs):
         if name and price is not None:
+            # Normalización básica de datos al insertar
+            ref_price = kwargs.get('reference_price')
             self.products.append({
                 "nombre": str(name).strip(),
                 "precio": float(price),
-                "precio_referencia": float(kwargs.get('reference_price')) if kwargs.get('reference_price') else None,
+                "precio_referencia": float(ref_price) if ref_price else None,
                 "cantidad": kwargs.get('quantity'),
                 "tipo_unidad": kwargs.get('unit_type'),
                 "imagen": kwargs.get('image_url')

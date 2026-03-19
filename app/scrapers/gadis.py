@@ -1,5 +1,5 @@
 from app.models.scraper_base import BaseScraper
-from app.utils.configs_util import GADIS_HEADERS, GADIS_API_CATEGORIES, GADIS_API_SEARCH
+from app.config.scrapers_config import GADIS_HEADERS, GADIS_API_CATEGORIES, GADIS_API_SEARCH
 from concurrent.futures import ThreadPoolExecutor
 
 class GadisScraper(BaseScraper):

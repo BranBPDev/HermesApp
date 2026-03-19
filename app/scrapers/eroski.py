@@ -4,7 +4,7 @@ import json
 import re
 import html
 from app.models.scraper_base import BaseScraper
-from app.utils.configs_util import EROSKI_HEADERS, EROSKI_CATEGORIES, EROSKI_LOAD_URL, EROSKI_REFERER
+from app.config.scrapers_config import EROSKI_HEADERS, EROSKI_CATEGORIES, EROSKI_LOAD_URL, EROSKI_REFERER
 
 class EroskiScraper(BaseScraper):
     def __init__(self):

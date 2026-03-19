@@ -1,5 +1,6 @@
 import os
 import psycopg2
+from psycopg2.pool import ThreadedConnectionPool
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 from app.utils.logger_util import HermesLogger
@@ -13,27 +14,41 @@ class DBManager:
             cls._instance = super(DBManager, cls).__new__(cls)
             cls._instance.log = HermesLogger.get_logger("DB_MANAGER")
             
-            # Carga del .env desde el path oficial definido en paths_util
             if ENV_PATH.exists():
                 load_dotenv(str(ENV_PATH))
             
-            cls._instance.url = os.getenv("DATABASE_URL")
+            url = os.getenv("DATABASE_URL")
+            if not url:
+                cls._instance.log.error("DATABASE_URL no configurada.")
+                cls._instance.pool = None
+            else:
+                try:
+                    # Creamos un Pool: min 1 conexión, max 10 (suficiente para 3 scrapers + app)
+                    cls._instance.pool = ThreadedConnectionPool(1, 10, url)
+                    cls._instance.log.info("Pool de conexiones DB inicializado.")
+                except Exception as e:
+                    cls._instance.log.error(f"Error creando Pool de conexiones: {e}")
+                    cls._instance.pool = None
         return cls._instance
 
-    def _get_connection(self):
-        try:
-            if not self.url:
-                raise ValueError("DATABASE_URL no configurada en el entorno.")
-            return psycopg2.connect(self.url)
-        except Exception as e:
-            self.log.error(f"Error de conexión: {e}")
-            return None
+    def get_connection(self):
+        """Pide una conexión al pool"""
+        if self.pool:
+            return self.pool.getconn()
+        return None
+
+    def release_connection(self, conn):
+        """Devuelve la conexión al pool en lugar de cerrarla"""
+        if self.pool and conn:
+            self.pool.putconn(conn)
 
     def execute_query(self, query, params=None, fetch=True):
-        conn = self._get_connection()
+        """Método de conveniencia para queries rápidas"""
+        conn = self.get_connection()
         if not conn: return None
         result = None
         try:
+            # Importante: RealDictCursor para que devuelva diccionarios
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(query, params)
                 if fetch and cur.description:
@@ -43,5 +58,5 @@ class DBManager:
             self.log.error(f"Error en query: {e}")
             conn.rollback()
         finally:
-            conn.close()
+            self.release_connection(conn)
         return result

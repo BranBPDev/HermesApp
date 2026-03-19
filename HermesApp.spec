@@ -16,7 +16,7 @@ a = Analysis(
     hiddenimports=[
         # Core & Networking
         'requests', 'certifi', 'urllib3', 'httpx', 'httpcore', 
-        'anyio', 'h2', 'hpack', 'hyperframe', 'python-dotenv',
+        'anyio', 'h2', 'hpack', 'hyperframe', 'dotenv',
         
         # Database & Auth
         'psycopg2', 'psycopg2.extensions', 'bcrypt',
@@ -25,10 +25,14 @@ a = Analysis(
         'app.utils.json_util', 'app.utils.update_util', 
         'app.utils.download_util', 'app.utils.paths_util', 
         'app.utils.zip_util', 'app.utils.logger_util', 
-        'app.utils.configs_util', 'app.utils.dates_util',
+        'app.utils.dates_util',
+        
+        # App Configs (NUEVA RUTA Y NOMBRE)
+        'app.config.scrapers_config', 
+        'app.config.tags_config',
         
         # App Daos
-        'app.daos.product_dao', 'app.daos.user_dao', 'app.daos.cart_dao', # <--- Añadido cart_dao
+        'app.daos.product_dao', 'app.daos.user_dao', 'app.daos.cart_dao',
         
         # App Scrapers
         'app.scrapers.mercadona', 'app.scrapers.gadis', 'app.scrapers.eroski',
@@ -68,5 +72,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['logo.ico'], # <--- AQUÍ se vincula el icono propio
+    icon=['logo.ico'],
 )

@@ -6,19 +6,17 @@ COMMON_HEADERS = {
     'Connection': 'keep-alive',
 }
 
-# --- MERCADONA ---
-MERCADONA_API_INDEX = "https://tienda.mercadona.es/api/categories/?lang=es&wh=4592"
-MERCADONA_API_CAT   = "https://tienda.mercadona.es/api/categories/{cat_id}/?lang=es&wh=4592"
+# --- MERCADONA (WH=1342 para zona Noroeste/Ourense) ---
+MERCADONA_API_INDEX = "https://tienda.mercadona.es/api/categories/?lang=es&wh=1342"
+MERCADONA_API_CAT   = "https://tienda.mercadona.es/api/categories/{cat_id}/?lang=es&wh=1342"
 
 # --- EROSKI ---
-# URL base para la carga de páginas vía AJAX (POST)
 EROSKI_LOAD_URL = "https://supermercado.eroski.es/es/supermarket.productlist:loadpage?t:ac={cat}"
 EROSKI_REFERER = "https://supermercado.eroski.es/es/supermercado/2059806-alimentacion/"
 
 EROSKI_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    **COMMON_HEADERS,
     "X-Requested-With": "XMLHttpRequest",
-    "Accept": "application/json, text/javascript, */*; q=0.01",
     "Origin": "https://supermercado.eroski.es",
     "Referer": EROSKI_REFERER
 }
