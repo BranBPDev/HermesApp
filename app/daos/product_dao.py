@@ -1,7 +1,7 @@
 import psycopg2.extras
 from app.managers.db_manager import DBManager
 from app.utils.logger_util import HermesLogger
-from app.utils.dates_util import get_current_date_str  # Importado tu util
+from app.utils.dates_util import get_current_date_str  # Import solucionado
 
 class ProductDAO:
     def __init__(self):
@@ -20,12 +20,12 @@ class ProductDAO:
         today_str = get_current_date_str()
 
         # 2. Query de Upsert
+        # Eliminamos 'tag' del UPDATE y del WHERE para que mantenga el que ya existe
         query = """
             INSERT INTO product (store_id, name, tag, price, price_norm, quantity, unit_type, image_url, last_update)
             VALUES %s
             ON CONFLICT (name, store_id) 
             DO UPDATE SET 
-                tag = EXCLUDED.tag,
                 price = EXCLUDED.price,
                 price_norm = EXCLUDED.price_norm,
                 quantity = EXCLUDED.quantity,
@@ -33,7 +33,6 @@ class ProductDAO:
                 image_url = EXCLUDED.image_url,
                 last_update = EXCLUDED.last_update
             WHERE (product.price IS DISTINCT FROM EXCLUDED.price OR 
-                   product.tag IS DISTINCT FROM EXCLUDED.tag OR
                    product.price_norm IS DISTINCT FROM EXCLUDED.price_norm OR
                    product.quantity IS DISTINCT FROM EXCLUDED.quantity OR
                    product.unit_type IS DISTINCT FROM EXCLUDED.unit_type OR
@@ -59,13 +58,13 @@ class ProductDAO:
                     unique_prods[nombre] = (
                         store_id,
                         nombre,
-                        p.get('tag', 'otros'),
+                        "otros",  # Tag forzado a "otros" para nuevos registros
                         float(p.get('precio', 0.0)),
                         float(p.get('price_norm', 0.0)),
                         qty,
                         p.get('tipo_unidad', 'ud'),
                         p.get('imagen', ''),
-                        today_str # Aplicada la fecha de tu util
+                        today_str # Fecha util
                     )
                 
                 data_list = list(unique_prods.values())
@@ -73,6 +72,8 @@ class ProductDAO:
                 
             conn.commit()
             self.log.info(f"Batch finalizado para {store_name}: {len(data_list)} productos procesados.")
+        
+        # Bloques EXCEPT y FINALLY añadidos correctamente
         except Exception as e:
             self.log.error(f"Error crítico en upsert_batch: {e}")
             if conn: conn.rollback()

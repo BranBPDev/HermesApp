@@ -1,66 +1,54 @@
 import re
-import unicodedata
-from app.config.tags_config import TAG_MAPPING
 
 class HermesRefactorer:
 
     @staticmethod
     def get_manual_tag(name: str) -> str:
-        if not name: return "otros"
-        
-        name_norm = ''.join(c for c in unicodedata.normalize('NFD', name.lower())
-                            if unicodedata.category(c) != 'Mn')
-        
-        # 1. Prioridad para PAN (si dice Pan, suele ser Pan, no Aceite)
-        if "pan " in name_norm or "panecillos" in name_norm or "barras" in name_norm:
-            if "molde" in name_norm: return "pan-molde"
-            if "tostado" in name_norm: return "pan-tostado"
-            return "pan-otros" # Tag genérico necesario
-
-        # 2. Iteramos con Regex para buscar PALABRAS COMPLETAS (\bword\b)
-        # Esto evita que 'chocolate' haga match con 'cola'
-        for tag, keywords in TAG_MAPPING.items():
-            for kw in keywords:
-                pattern = rf'\b{re.escape(kw)}\b'
-                if re.search(pattern, name_norm):
-                    return tag
-                    
-        return "otros"
+        # Forzamos a _temp para cumplir con el requisito de actualización
+        return "_temp"
 
     @staticmethod
-    def get_normalized_data(name: str, price: float) -> float:
+    def get_normalized_data(name: str, price: float):
+        """
+        Retorna (price_norm, quantity, unit_type)
+        Normaliza todo a kg, L o ud.
+        """
         if not price or not isinstance(price, (int, float)): 
-            return 0.0
+            return 0.0, 0.0, 'ud'
             
         name_clean = name.lower().replace(',', '.')
         
-        # Regex más robusto para capturar el peso en Eroski
-        # Soporta: "465 g", "1kg", "1.5 l", "pack 3x65 g"
+        # Regex para capturar peso/volumen y unidades
         unit_pattern = r'(\d+[\.]?\d*)\s*(ml|cl|l(?:itros)?|kg|kilo(?:s)?|g(?:r(?:amos)?)?)'
-        
         pack_match = re.search(r'(\d+)\s*[xX]\s*' + unit_pattern, name_clean)
         
         total_qty = 0.0
-        unit = ""
+        unit_found = ""
 
         if pack_match:
             total_qty = float(pack_match.group(1)) * float(pack_match.group(2))
-            unit = pack_match.group(3)
+            unit_found = pack_match.group(3)
         else:
             single_match = re.search(unit_pattern, name_clean)
             if single_match:
                 total_qty = float(single_match.group(1))
-                unit = single_match.group(2)
+                unit_found = single_match.group(2)
 
-        # Si no hay cantidad, el precio normalizado es el precio base
-        if total_qty == 0: return price
+        # Si no hay cantidad detectable, asumimos 1 unidad
+        if total_qty == 0: 
+            return round(price, 2), 1.0, 'ud'
 
-        # Convertir todo a base Kg o L
-        if unit.startswith('k') or (unit.startswith('l') and 'ml' not in unit and 'cl' not in unit):
-            factor = total_qty
-        elif 'cl' in unit:
-            factor = total_qty / 100
-        else: # g o ml
-            factor = total_qty / 1000
+        # Lógica de conversión a Base (Kg o L)
+        final_unit = 'ud'
+        factor = total_qty
 
-        return round(price / factor, 2) if factor > 0 else price
+        if any(u in unit_found for u in ['l', 'litro']):
+            final_unit = 'L'
+            if 'ml' in unit_found: factor = total_qty / 1000
+            elif 'cl' in unit_found: factor = total_qty / 100
+        elif any(u in unit_found for u in ['g', 'kg', 'kilo']):
+            final_unit = 'kg'
+            if unit_found == 'g' or 'gramo' in unit_found: factor = total_qty / 1000
+        
+        price_norm = round(price / factor, 2) if factor > 0 else price
+        return price_norm, round(factor, 3), final_unit
