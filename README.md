@@ -148,6 +148,7 @@ HermesApp incorpora un sistema automático de actualización completamente trans
 * **Persistencia:** PostgreSQL alojado en Neon DB con una capa de DAOs para transacciones seguras
 
 </details>
+
 ---
 
 ## 👨‍💻 Desarrollo desde cero (Build Manual)
