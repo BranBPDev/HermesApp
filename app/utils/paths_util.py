@@ -16,11 +16,19 @@ MAIN_LOG_PATH = LOGS_DIR / "hermesApp.log"
 DOWNLOAD_FOLDER = BASE_DIR / "temp_download"
 TEMP_ZIP_PATH = DOWNLOAD_FOLDER / "update.zip"
 
+# ASSETS
+ASSETS_DIR = BASE_DIR / "app" / "assets"
+ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+
+LOGO_PNG = ASSETS_DIR / "logo.png"
+LOGO_ICO = ASSETS_DIR / "logo.ico"
+
 # DATA
 DATA_DIR = BASE_DIR / "app" / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 VERSION_JSON = DATA_DIR / "version.json"
+SESSION_JSON = DATA_DIR / "session.json"
 
 # SCRAPERS
 SCRAPERS_DIR = DATA_DIR / "scrapers"

@@ -3,6 +3,7 @@ from app.utils.logger_util import HermesLogger
 from app.utils.json_util import read_json
 from app.utils.download_util import download_files
 from app.utils.zip_util import unzip_file
+from app.utils.callback_util import invoke_progress
 from app.utils.paths_util import VERSION_JSON, REMOTE_VERSION_JSON, LATEST_ZIP_URL, TEMP_ZIP_PATH, DOWNLOAD_FOLDER, BASE_DIR, MAIN_LOG_PATH
 
 log = HermesLogger.get_logger("UPDATER")
@@ -14,13 +15,15 @@ def is_latest_version():
         log.error(f"No se pudo verificar versión: {e}")
         return True
 
-def perform_update():
+def perform_update(progress_callback=None):
     log.info("Iniciando descarga de actualización...")
     try:
         if DOWNLOAD_FOLDER.exists(): shutil.rmtree(DOWNLOAD_FOLDER)
         DOWNLOAD_FOLDER.mkdir(parents=True)
         
-        download_files((LATEST_ZIP_URL,), (TEMP_ZIP_PATH,))
+        download_files((LATEST_ZIP_URL,), (TEMP_ZIP_PATH,), progress_callback=progress_callback)
+        
+        invoke_progress(progress_callback, 0.95, "Descomprimiendo archivos...")
         unzip_file(TEMP_ZIP_PATH, DOWNLOAD_FOLDER)
         log.info("Descompresión lista. Lanzando proceso de reemplazo...")
 

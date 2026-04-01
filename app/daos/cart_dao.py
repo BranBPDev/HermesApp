@@ -35,7 +35,7 @@ class CartDAO:
                 SELECT p.tag, p.price_norm as curr_price_norm, p.name as curr_name, p.store_id
                 FROM cart_item c
                 JOIN product p ON c.product_id = p.id
-                WHERE c.user_id = %s AND p.tag != 'otros'
+                WHERE c.user_id = %s AND p.tag != '_temp'
             )
             SELECT DISTINCT ON (ci.curr_name)
                 ci.curr_name as original_name,

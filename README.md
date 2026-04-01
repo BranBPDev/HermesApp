@@ -154,7 +154,7 @@ python -m pip install --upgrade pip setuptools wheel
 
 ### Instalar dependencias necesarias
 ```bash
-pip install certifi requests urllib3 pyinstaller httpx h2 psycopg2-binary bcrypt python-dotenv
+pip install certifi requests urllib3 pyinstaller httpx h2 psycopg2-binary bcrypt python-dotenv customtkinter Pillow
 ```
 
 ### Limpiar compilaciones previas

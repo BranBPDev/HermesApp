@@ -14,34 +14,15 @@ a = Analysis(
         ('.env', '.'), 
     ],
     hiddenimports=[
-        # Core & Networking
-        'requests', 'certifi', 'urllib3', 'httpx', 'httpcore', 
-        'anyio', 'h2', 'hpack', 'hyperframe', 'dotenv',
-        
-        # Database & Auth
-        'psycopg2', 'psycopg2.extensions', 'bcrypt',
-        
-        # App Utils
-        'app.utils.json_util', 'app.utils.update_util', 
-        'app.utils.download_util', 'app.utils.paths_util', 
-        'app.utils.zip_util', 'app.utils.logger_util', 
-        'app.utils.dates_util',
-        
-        # App Configs (NUEVA RUTA Y NOMBRE)
-        'app.config.scrapers_config', 
-        'app.config.tags_config',
-        
-        # App Daos
-        'app.daos.product_dao', 'app.daos.user_dao', 'app.daos.cart_dao',
-        
-        # App Scrapers
-        'app.scrapers.mercadona', 'app.scrapers.gadis', 'app.scrapers.eroski',
-        
-        # App Managers
-        'app.managers.scraper_manager', 
-        'app.managers.product_manager', 
-        'app.managers.app_manager',
-        'app.managers.auth_manager'
+        'customtkinter',
+        'PIL',
+        'bcrypt',
+        'psycopg2',
+        # Eliminamos los que daban error y simplificamos
+        'app.utils.json_util', 
+        'app.utils.update_util', 
+        'app.utils.logger_util',
+        'app.views.auth_window'
     ],
     hookspath=[],
     runtime_hooks=[os.path.join('pyinstaller_hooks', 'rthook_certifi.py')],
@@ -66,7 +47,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True, 
+    console=False, # Mantenlo en False para que no salga el CMD
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

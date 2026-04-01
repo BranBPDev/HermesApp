@@ -4,7 +4,6 @@ class HermesRefactorer:
 
     @staticmethod
     def get_manual_tag(name: str) -> str:
-        # Forzamos a _temp para cumplir con el requisito de actualización
         return "_temp"
 
     @staticmethod
