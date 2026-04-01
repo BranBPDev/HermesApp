@@ -5,12 +5,12 @@
 ---
 
 ## 📌 Índice de Contenidos
-1. [🚀 Características y Estado](#-características-y-estado)
-2. [⬇️ Instalación y Descargas](#️-instalación-y-descargas)
-3. [⌨️ Guía de Uso y Comandos](#️-guía-de-uso-y-comandos)
-4. [🏗️ Arquitectura y Desarrollo](#️-arquitectura-y-desarrollo)
-5. [🔑 Configuración y Logs](#-configuración-y-logs)
-6. [🧠 Roadmap del Proyecto](#-roadmap-del-proyecto)
+1. <a href="#-caracter%C3%ADsticas-y-estado" style="text-decoration: none;">🚀 Características y Estado</a>
+2. <a href="#%EF%B8%8F-instalaci%C3%B3n-y-descargas" style="text-decoration: none;">⬇️ Instalación y Descargas</a>
+3. <a href="#%EF%B8%8F-gu%C3%ADa-de-uso-y-comandos" style="text-decoration: none;">⌨️ Guía de Uso y Comandos</a>
+4. <a href="#%EF%B8%8F-arquitectura-y-desarrollo" style="text-decoration: none;">🏗️ Arquitectura y Desarrollo</a>
+5. <a href="#-configuraci%C3%B3n-y-logs" style="text-decoration: none;">🔑 Configuración y Logs</a>
+6. <a href="#-roadmap-del-proyecto" style="text-decoration: none;">🧠 Roadmap del Proyecto</a>
 
 ---
 
@@ -70,27 +70,30 @@
 
 ---
 
-## ⬇️ Descarga (IMPORTANTE)
-
-Para utilizar HermesApp debes descargar la aplicación desde la sección de **Releases**:
-
+## ⬇️ Instalación y Descargas
+<details>
+  <summary><strong>Instrucciones de descarga y ejecución del ejecutable</strong></summary>
+  
+### Descarga Directa
 👉 [**Descargar última versión en Releases**](https://github.com/BranBPDev/HermesApp/releases/latest/download/HermesApp.zip)
 
 > ⚠️ **No descargues el código fuente (ZIP desde el botón "Code")** para uso normal. La versión de Releases incluye el ejecutable listo para usar y el sistema de auto-actualización.
 
----
-
-## 💻 Uso del Ejecutable
+### Pasos para usar el Ejecutable
 
 1. Descarga el `.zip` desde Releases.
 2. Descomprime el contenido en una carpeta vacía para evitar conflictos.
 3. Ejecuta el archivo `.exe`.
+4. La aplicación gestionará automáticamente la verificación de versión y la carga de datos.
 
-La aplicación gestionará automáticamente la verificación de versión, el scraping paralelo y la generación de archivos JSON.
+</details>
 
 ---
 
-## ⌨️ Comandos de la Aplicación
+## ⌨️ Guía de Uso y Comandos
+
+<details>
+  <summary><strong>Ver comandos disponibles en el buscador</strong></summary>
 
 Una vez iniciada la sesión, puedes usar los siguientes comandos en el buscador:
 * `carrito`: Visualiza tus productos guardados y el total estimado.
@@ -101,7 +104,7 @@ Una vez iniciada la sesión, puedes usar los siguientes comandos en el buscador:
 
 ---
 
-## 🔄 Sistema de Auto-Actualización
+### 🔄 Sistema de Auto-Actualización
 
 HermesApp incorpora un sistema automático de actualización completamente transparente:
 
@@ -109,9 +112,15 @@ HermesApp incorpora un sistema automático de actualización completamente trans
 2. **Descarga:** Si detecta una versión superior, descarga el paquete actualizado.
 3. **Hot-Swap:** Sustituye los archivos antiguos y reinicia la aplicación automáticamente.
 
+</details>
+
 ---
 
-## 🏗 Arquitectura Técnica
+## 🏗️ Arquitectura y Desarrollo
+
+<details>
+<summary><strong>Ver estructura detallada del proyecto y tecnologías</strong></summary>
+
 
 **HermesApp/**  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── ⚓ **pyinstaller_hooks/** — Hooks personalizados para el empaquetado  
@@ -120,10 +129,12 @@ HermesApp incorpora un sistema automático de actualización completamente trans
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 📄 **HermesApp.spec** — Configuración para PyInstaller  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 🔐 **.env** — Configuración de base de datos (No incluido en Git)  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── 📂 **app/**  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── ⚙️ **config/** — Configuración de scrapers y selectores  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 🗄️ **daos/** — Acceso a datos (UserDAO, ProductDAO, CartDAO)  
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── ⚙️ **managers/** — Lógica de negocio (Auth, App, DB, Product, Scraper)  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 🧠 **managers/** — Lógica de negocio (Auth, App, DB, Product, Scraper)  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 📐 **models/** — Contratos y esquemas de datos  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 🕷️ **scrapers/** — Motores de extracción por supermercado  
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 🖼️ **views/** — Interfaz gráfica (Windows, Styles, UpdateView)  
 │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── 🛠️ **utils/** — SSL Patches, Logs, Rutas y Actualización  
 
 ### Características técnicas principales
@@ -132,10 +143,17 @@ HermesApp incorpora un sistema automático de actualización completamente trans
 * **Concurrencia:** Ejecución paralela mediante ThreadPoolExecutor
 * **Networking:** Uso de requests.Session con pool de conexiones persistentes
 * **Estructura:** Gestión centralizada de rutas y generación estructurada de JSON
+* **Seguridad:** Gestión de credenciales mediante crypto_util.py y hashing con bcrypt
+* **Interfaz Gráfica:** Desarrollada con CustomTkinter para un acabado moderno y escalable
+* **Persistencia:** PostgreSQL alojado en Neon DB con una capa de DAOs para transacciones seguras
 
+</details>
 ---
 
 ## 👨‍💻 Desarrollo desde cero (Build Manual)
+
+<details>
+<summary><strong>Instrucciones para configurar el entorno y compilar</strong></summary>
 
 ### Clonar el repositorio
 ```bash
@@ -195,9 +213,15 @@ deactivate
 }
 ```
 
+</details>
+
 ---
 
 ## 🔑 Configuración de Variables de Entorno
+
+<details>
+<summary><strong>Ver configuración de variables y sistema de depuración</strong></summary>
+
 El proyecto utiliza PostgreSQL alojado en [**Neon.tech**](https://neon.com/) para la persistencia de datos en la nube. Para que la aplicación funcione correctamente en desarrollo, debes crear un archivo .env en la raíz del proyecto.
 
 1. Crea el archivo .env:
@@ -222,9 +246,14 @@ Para facilitar el mantenimiento, la aplicación genera logs detallados en la car
 * **DEBUG:** Detalles técnicos (URLs procesadas, inyección de cookies).
 * **ERROR:** Fallos específicos de red o parseo de datos (ver Tracebacks).
 
+</details>
+
 ---
 
 ## 🧠 Estado del Proyecto
+
+<details>
+<summary><strong>Ver hitos alcanzados y próximas metas</strong></summary>
 
 HermesApp se encuentra en desarrollo activo.
 
@@ -235,6 +264,8 @@ Metas del proyecto:
 * ✅ Carrito Multi-tienda: Comparación y suma de productos de distintas fuentes.
 * 🚧 Interfaz de Usuario (GUI): En planificación.
 * 🚧 Gadis: Scraper en fase de re-estructuración.
+
+</details>
 
 ---
 
