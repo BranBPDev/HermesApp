@@ -5,12 +5,12 @@
 ---
 
 ## 📌 Índice de Contenidos
-1. <a href="#-caracter%C3%ADsticas-y-estado" style="text-decoration: none;">🚀 Características y Estado</a>
-2. <a href="#%EF%B8%8F-instalaci%C3%B3n-y-descargas" style="text-decoration: none;">⬇️ Instalación y Descargas</a>
-3. <a href="#%EF%B8%8F-gu%C3%ADa-de-uso-y-comandos" style="text-decoration: none;">⌨️ Guía de Uso y Comandos</a>
-4. <a href="#%EF%B8%8F-arquitectura-y-desarrollo" style="text-decoration: none;">🏗️ Arquitectura y Desarrollo</a>
-5. <a href="#-configuraci%C3%B3n-y-logs" style="text-decoration: none;">🔑 Configuración y Logs</a>
-6. <a href="#-roadmap-del-proyecto" style="text-decoration: none;">🧠 Roadmap del Proyecto</a>
+1. <a href="#-caracter%C3%ADsticas-y-estado" style="text-decoration: none !important;">🚀 Características y Estado</a>
+2. <a href="#%EF%B8%8F-instalaci%C3%B3n-y-descargas" style="text-decoration: none !important;">⬇️ Instalación y Descargas</a>
+3. <a href="#%EF%B8%8F-gu%C3%ADa-de-uso-y-comandos" style="text-decoration: none !important;">⌨️ Guía de Uso y Comandos</a>
+4. <a href="#%EF%B8%8F-arquitectura-y-desarrollo" style="text-decoration: none !important;">🏗️ Arquitectura y Desarrollo</a>
+5. <a href="#-configuraci%C3%B3n-y-logs" style="text-decoration: none !important;">🔑 Configuración y Logs</a>
+6. <a href="#-roadmap-del-proyecto" style="text-decoration: none !important;">🧠 Roadmap del Proyecto</a>
 
 ---
 
