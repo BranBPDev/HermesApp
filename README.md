@@ -4,9 +4,22 @@
 
 ---
 
-## 🚀 ¿Qué es HermesApp?
+## 📌 Índice de Contenidos
+1. [🚀 Características y Estado](#-características-y-estado)
+2. [⬇️ Instalación y Descargas](#️-instalación-y-descargas)
+3. [⌨️ Guía de Uso y Comandos](#️-guía-de-uso-y-comandos)
+4. [🏗️ Arquitectura y Desarrollo](#️-arquitectura-y-desarrollo)
+5. [🔑 Configuración y Logs](#-configuración-y-logs)
+6. [🧠 Roadmap del Proyecto](#-roadmap-del-proyecto)
 
-HermesApp automatiza el flujo completo de información:
+---
+
+## 🚀 Características y Estado
+
+<details>
+  <summary><strong>Ver resumen de funcionalidades y supermercados operativos</strong></summary>
+
+### ¿Qué hace HermesApp?
 
 * **Autenticación:** Sistema de usuarios con contraseñas seguras (bcrypt).
 * **Recolección:** Scraping multihilo sincronizado en tiempo real con la nube.
@@ -14,11 +27,7 @@ HermesApp automatiza el flujo completo de información:
 * **Comparación:** Búsqueda unificada que mezcla y ordena productos de diferentes tiendas por precio.
 * **Carrito de compra:** Gestión de listas personalizadas con cálculo de totales por usuario.
 
-El objetivo del proyecto es desarrollar un comparador de precios funcional, preciso y escalable.
-
----
-
-## 🏪 Supermercados Soportados Actualmente
+### 🏪 Supermercados Soportados Actualmente
 <div align="center">
   <table style="width: 100%; max-width: 800px;">
     <thead>
@@ -57,6 +66,7 @@ El objetivo del proyecto es desarrollar un comparador de precios funcional, prec
     </tbody>
   </table>
 </div>
+</details>
 
 ---
 
