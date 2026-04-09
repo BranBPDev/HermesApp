@@ -1,7 +1,7 @@
 import psycopg2.extras
 from app.managers.db_manager import DBManager
 from app.utils.logger_util import HermesLogger
-from app.utils.dates_util import get_current_date_str  # Import solucionado
+from app.utils.dates_util import get_current_date_str
 
 class ProductDAO:
     def __init__(self):
@@ -9,18 +9,14 @@ class ProductDAO:
         self.db = DBManager()
 
     def upsert_batch(self, store_name: str, products: list):
-        # 1. Obtener ID de la tienda
         store_res = self.db.execute_query("SELECT id FROM store WHERE name = %s", (store_name.lower(),), fetch=True)
         if not store_res: 
-            self.log.error(f"Tienda {store_name} no encontrada en DB")
+            self.log.error(f"Tienda {store_name} no encontrada")
             return
         
         store_id = store_res[0]['id']
-        # Usando tu utilidad de fechas
         today_str = get_current_date_str()
 
-        # 2. Query de Upsert
-        # Eliminamos 'tag' del UPDATE y del WHERE para que mantenga el que ya existe
         query = """
             INSERT INTO product (store_id, name, tag, price, price_norm, quantity, unit_type, image_url, last_update)
             VALUES %s
@@ -41,52 +37,37 @@ class ProductDAO:
         
         conn = self.db.get_connection()
         if not conn: return
-
         try:
             with conn.cursor() as cur:
                 unique_prods = {}
                 for p in products:
                     nombre = p.get('nombre', 'Sin nombre')
-                    
-                    qty = p.get('cantidad')
-                    try:
-                        qty = float(qty) if qty is not None and qty != '' else 0.0
-                    except:
-                        qty = 0.0
+                    qty = p.get('cantidad', 0)
+                    try: qty = float(qty) if qty else 0.0
+                    except: qty = 0.0
 
-                    # Filtramos duplicados en el mismo batch para evitar errores de SQL
                     unique_prods[nombre] = (
-                        store_id,
-                        nombre,
-                        "otros",  # Tag forzado a "otros" para nuevos registros
-                        float(p.get('precio', 0.0)),
-                        float(p.get('price_norm', 0.0)),
-                        qty,
-                        p.get('tipo_unidad', 'ud'),
-                        p.get('imagen', ''),
-                        today_str # Fecha util
+                        store_id, nombre, "_temp",
+                        float(p.get('precio', 0.0)), float(p.get('price_norm', 0.0)),
+                        qty, p.get('tipo_unidad', 'ud'), p.get('imagen', ''), today_str
                     )
-                
                 data_list = list(unique_prods.values())
                 psycopg2.extras.execute_values(cur, query, data_list)
-                
             conn.commit()
-            self.log.info(f"Batch finalizado para {store_name}: {len(data_list)} productos procesados.")
-        
-        # Bloques EXCEPT y FINALLY añadidos correctamente
         except Exception as e:
-            self.log.error(f"Error crítico en upsert_batch: {e}")
+            self.log.error(f"Error en upsert_batch: {e}")
             if conn: conn.rollback()
         finally:
             if conn: self.db.release_connection(conn)
 
-    def search_by_name(self, query_text: str):
-        sql = """
+    def search_by_tag(self, query_tag: str, order_by: str = "p.price_norm ASC"):
+        """ Búsqueda estricta por similitud en el campo TAG """
+        sql = f"""
             SELECT p.*, s.name as store_name
             FROM product p
             JOIN store s ON p.store_id = s.id
-            WHERE p.name ILIKE %s
-            ORDER BY p.price_norm ASC LIMIT 100
+            WHERE p.tag ILIKE %s
+            ORDER BY {order_by} LIMIT 150
         """
-        formatted_query = f"%{query_text.replace(' ', '%')}%"
+        formatted_query = f"%{query_tag}%"
         return self.db.execute_query(sql, (formatted_query,), fetch=True)

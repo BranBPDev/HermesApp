@@ -1,13 +1,13 @@
 import customtkinter as ctk
-from app.views.styles import COLOR_BG_DARK, COLOR_PRIMARY, COLOR_TEXT_DIM, FONT_SUBTITLE, FONT_REGULAR
+from app.views.styles import COLOR_BG_DARK, COLOR_PRIMARY, COLOR_TEXT_DIM, FONT_TITLE, FONT_REGULAR
 
 class UpdateView(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_BG_DARK, corner_radius=0)
         
-        ctk.CTkLabel(self, text="NUEVA VERSIÓN DETECTADA", font=FONT_SUBTITLE, text_color=COLOR_PRIMARY).pack(pady=(150, 10))
+        ctk.CTkLabel(self, text="NUEVA VERSIÓN DETECTADA", font=FONT_TITLE, text_color=COLOR_PRIMARY).pack(pady=(180, 10))
         
-        self.progress_bar = ctk.CTkProgressBar(self, width=400, progress_color=COLOR_PRIMARY)
+        self.progress_bar = ctk.CTkProgressBar(self, width=450, progress_color=COLOR_PRIMARY)
         self.progress_bar.set(0)
         self.progress_bar.pack(pady=20)
 

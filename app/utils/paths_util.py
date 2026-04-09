@@ -20,6 +20,9 @@ TEMP_ZIP_PATH = DOWNLOAD_FOLDER / "update.zip"
 ASSETS_DIR = BASE_DIR / "app" / "assets"
 ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 
+IMG_CACHE_DIR = ASSETS_DIR / "cache"
+IMG_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
 LOGO_PNG = ASSETS_DIR / "logo.png"
 LOGO_ICO = ASSETS_DIR / "logo.ico"
 

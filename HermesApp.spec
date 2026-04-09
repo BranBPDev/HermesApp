@@ -18,11 +18,25 @@ a = Analysis(
         'PIL',
         'bcrypt',
         'psycopg2',
-        # Eliminamos los que daban error y simplificamos
+        # UTILS
         'app.utils.json_util', 
         'app.utils.update_util', 
         'app.utils.logger_util',
-        'app.views.auth_window'
+        'app.utils.paths_util',
+        'app.utils.crypto_util',
+        # MANAGERS
+        'app.managers.product_manager',
+        'app.managers.app_manager',
+        'app.managers.auth_manager',
+        # VIEWS
+        'app.views.auth_window',
+        'app.views.main_window',
+        'app.views.styles',
+        # COMPONENTS (Los nuevos que añadimos)
+        'app.components.pagination_footer',
+        'app.components.product_row',
+        'app.components.scrollable_list',
+        'app.components.user_header'
     ],
     hookspath=[],
     runtime_hooks=[os.path.join('pyinstaller_hooks', 'rthook_certifi.py')],
@@ -47,7 +61,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False, # Mantenlo en False para que no salga el CMD
+    console=False, 
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
