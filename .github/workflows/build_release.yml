@@ -42,7 +42,7 @@ jobs:
           echo "LATEST=$($json.configs.make_latest.ToString().ToLower())" >> $env:GITHUB_ENV
           
           # Crear el version.json limpio para el usuario usando 'userjson'
-          $json.userjson | ConvertTo-Json | Out-File "version_user.json" -Encoding utf8
+          $json.userjson | ConvertTo-Json | Out-File "version.json" -Encoding utf8
 
       - name: 🔨 Compilar EXE (PyInstaller lo empaqueta todo)
         run: pyinstaller --clean HermesApp.spec
@@ -72,7 +72,7 @@ jobs:
           make_latest: ${{ env.LATEST == 'true' }}
           files: |
             HermesApp.zip
-            version_user.json
+            version.json
           overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
