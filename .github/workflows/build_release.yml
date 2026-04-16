@@ -58,7 +58,7 @@ jobs:
           Copy-Item -Path "app/assets/logo.png" -Destination "release_build/app/assets/"
           
           # El JSON limpio va dentro del ZIP para la app
-          Copy-Item -Path "version_user.json" -Destination "release_build/app/data/version.json"
+          Copy-Item -Path "version.json" -Destination "release_build/app/data/version.json"
 
           Compress-Archive -Path "release_build/*" -DestinationPath "HermesApp.zip" -Force
 
