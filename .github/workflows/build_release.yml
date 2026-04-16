@@ -1,0 +1,78 @@
+name: Build and Release HermesApp
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: 📥 Checkout Código
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+
+      - name: 📦 Instalar Dependencias
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+
+      - name: 🔐 Crear .env (Solo para compilar)
+        shell: bash
+        run: echo "${{ secrets.ENV_FILE_CONTENT }}" > .env
+
+      - name: 🏷️ Extraer Configuración del Release
+        id: config
+        shell: pwsh
+        run: |
+          $json = Get-Content version.json | ConvertFrom-Json
+          
+          # Extraer datos del bloque 'configs' para GitHub
+          echo "TAG=$($json.configs.tag)" >> $env:GITHUB_ENV
+          echo "REL_NAME=$($json.configs.name)" >> $env:GITHUB_ENV
+          echo "DESC=$($json.configs.description)" >> $env:GITHUB_ENV
+          echo "PRE=$($json.configs.prerelease.ToString().ToLower())" >> $env:GITHUB_ENV
+          echo "LATEST=$($json.configs.make_latest.ToString().ToLower())" >> $env:GITHUB_ENV
+          
+          # Crear el version.json limpio para el usuario usando 'userjson'
+          $json.userjson | ConvertTo-Json | Out-File "version_user.json" -Encoding utf8
+
+      - name: 🔨 Compilar EXE (PyInstaller lo empaqueta todo)
+        run: pyinstaller --clean HermesApp.spec
+
+      - name: 🗂️ Preparar ZIP Final
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "release_build/app/assets"
+          New-Item -ItemType Directory -Force -Path "release_build/app/data"
+          
+          Copy-Item -Path "dist/HermesApp.exe" -Destination "release_build/"
+          Copy-Item -Path "app/assets/logo.ico" -Destination "release_build/app/assets/"
+          Copy-Item -Path "app/assets/logo.png" -Destination "release_build/app/assets/"
+          
+          # El JSON limpio va dentro del ZIP para la app
+          Copy-Item -Path "version_user.json" -Destination "release_build/app/data/version.json"
+
+          Compress-Archive -Path "release_build/*" -DestinationPath "HermesApp.zip" -Force
+
+      - name: 🚀 Publicar en GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: ${{ env.REL_NAME }}
+          body: ${{ env.DESC }}
+          prerelease: ${{ env.PRE == 'true' }}
+          make_latest: ${{ env.LATEST == 'true' }}
+          files: |
+            HermesApp.zip
+            version_user.json
+          overwrite: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
