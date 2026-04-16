@@ -1,0 +1,17 @@
+{
+    "configs": {
+        "tag": "v0.0.4",
+        "name": "GUI",
+        "description": "En esta actualización se llevará a cabo la implementación de la interfaz gráfica.",
+        "prerelease": false,
+        "make_latest": true,
+        "branch": "main"
+    },
+    "userjson": {
+        "name": "HermesApp",
+        "version": "0.0.4",
+        "releaseDate": "2026-03-10",
+        "author": "BranBP",
+        "repository": "https://github.com/BranBPDev/HermesApp"
+    }
+}

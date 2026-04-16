@@ -1,11 +1,16 @@
 from pathlib import Path
 import sys
+import os
 
-# BASE DIRECTORY (Entorno ejecutable)
+# BASE DIRECTORY (Donde está el .exe físicamente)
 BASE_DIR = Path(sys.executable).parent
 
-# CONFIGURATION
-ENV_PATH = BASE_DIR / ".env"
+# INTERNAL DIRECTORY (Dentro del .exe empaquetado)
+# PyInstaller extrae los archivos internos en sys._MEIPASS
+INTERNAL_DIR = Path(sys._MEIPASS) if hasattr(sys, '_MEIPASS') else Path(__file__).parent.parent.parent
+
+# CONFIGURATION - Miramos DENTRO del .exe para el .env
+ENV_PATH = INTERNAL_DIR / ".env"
 
 # LOGS
 LOGS_DIR = BASE_DIR / "app" / "logs"
@@ -25,6 +30,7 @@ IMG_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 LOGO_PNG = ASSETS_DIR / "logo.png"
 LOGO_ICO = ASSETS_DIR / "logo.ico"
+def get_store_logo_path(store_name): return ASSETS_DIR / f"{store_name}.png"
 
 # DATA
 DATA_DIR = BASE_DIR / "app" / "data"

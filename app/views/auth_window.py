@@ -54,8 +54,18 @@ class AuthView(ctk.CTkFrame):
 
         self.user_entry = ctk.CTkEntry(right_frame, placeholder_text="Usuario", **STYLE_INPUT)
         self.user_entry.pack(fill="x", pady=5)
+        
         self.pass_entry = ctk.CTkEntry(right_frame, placeholder_text="Contraseña", show="*", **STYLE_INPUT)
         self.pass_entry.pack(fill="x", pady=(5, 10))
+        
+        # Botón para mostrar/ocultar contraseña dentro del input
+        self.show_pass_btn = ctk.CTkButton(
+            self.pass_entry, text="👁", width=30, height=30,
+            fg_color="transparent", hover_color="#333333",
+            text_color=COLOR_TEXT_MAIN, font=FONT_REGULAR,
+            command=self._toggle_password_visibility
+        )
+        self.show_pass_btn.place(relx=1.0, rely=0.5, anchor="e", x=-5)
         
         self.user_entry.bind("<Return>", lambda e: self._handle_auth())
         self.pass_entry.bind("<Return>", lambda e: self._handle_auth())
@@ -70,6 +80,14 @@ class AuthView(ctk.CTkFrame):
 
         ctk.CTkButton(right_frame, text="ENTRAR AL TABLERO", command=self._handle_auth, **STYLE_BUTTON_PRIMARY).pack(fill="x", pady=(10, 40))
         self._toggle_badges()
+
+    def _toggle_password_visibility(self):
+        if self.pass_entry.cget("show") == "*":
+            self.pass_entry.configure(show="")
+            self.show_pass_btn.configure(text="🔒")
+        else:
+            self.pass_entry.configure(show="*")
+            self.show_pass_btn.configure(text="👁")
 
     def _toggle_badges(self):
         if self.remember_var.get():

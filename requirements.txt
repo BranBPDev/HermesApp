@@ -1,0 +1,11 @@
+certifi
+requests
+urllib3
+pyinstaller
+httpx
+h2
+psycopg2-binary
+bcrypt
+python-dotenv
+customtkinter
+Pillow
