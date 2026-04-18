@@ -1,5 +1,4 @@
 import time, concurrent.futures
-from pathlib import Path
 from app.utils.paths_util import PRODUCT_PATHS
 from app.utils.dates_util import get_current_date_str
 from app.utils.logger_util import HermesLogger 
@@ -20,9 +19,9 @@ SCRAPER_REGISTRY = {
 
 def _execute_scraper(name):
     date_str = get_current_date_str()
-    # Ahora solo guardamos un archivo final procesado
-    final_file = Path(f"{PRODUCT_PATHS[name]}_{date_str}.json")
-
+    # Construcción de ruta usando strings sobre el objeto Path importado
+    final_file = f"{PRODUCT_PATHS[name]}_{date_str}.json"
+    
     start = time.time()
     try:
         scraper_inst = SCRAPER_REGISTRY[name]()
@@ -33,38 +32,34 @@ def _execute_scraper(name):
 
         refactorer = HermesRefactorer()
         final_products = []
-        seen_names = set() # Para evitar duplicados en el mismo batch
+        seen_names = set()
 
         for item in raw_data:
             nombre = item.get('nombre', '').strip()
-            
-            # --- FILTRO DE DUPLICADOS EN MEMORIA ---
-            # Si el nombre ya lo procesamos en este scrapeo, lo saltamos
             if not nombre or nombre in seen_names:
                 continue
             
             new_item = item.copy()
-            # Enriquecemos con tags y precios normalizados
-            new_item['tag'] = refactorer.get_manual_tag(nombre)
-            new_item['price_norm'] = refactorer.get_normalized_data(
-                nombre, 
-                item.get('precio', 0)
-            )
+            # OJO: Aquí el manager usa el refactorer para el cálculo de precios, 
+            # pero el DAO mandará "_temp" para el TAG.
             
-            # Añadimos a la lista final y marcamos como visto
+            if item.get('precio_referencia') and item.get('precio_referencia') > 0:
+                new_item['price_norm'] = item['precio_referencia']
+                new_item['cantidad'] = item.get('cantidad')
+                new_item['tipo_unidad'] = item.get('tipo_unidad')
+            else:
+                p_norm, qty, unit = refactorer.get_normalized_data(nombre, item.get('precio', 0))
+                new_item['price_norm'] = p_norm
+                new_item['cantidad'] = qty
+                new_item['tipo_unidad'] = unit
+            
             final_products.append(new_item)
             seen_names.add(nombre)
         
-        # 1. Guardar archivo único con datos ya procesados (Refactorizados)
         save_json(final_file, final_products)
+        ProductDAO().upsert_batch(name, final_products)
         
-        # 2. 🔥 SUBIDA A LA BASE DE DATOS 🔥
-        # Enviamos la lista final_products que ya no tiene duplicados de nombre
-        dao = ProductDAO()
-        dao.upsert_batch(name, final_products)
-        
-        duracion = round(time.time() - start, 2)
-        log.info(f"✅ {name.upper()} ok ({duracion}s) -> {len(final_products)} prods únicos subidos")
+        log.info(f"✅ {name.upper()} ok ({round(time.time()-start, 2)}s) -> {len(final_products)} prods")
         return f"{name.upper()} finalizado"
 
     except Exception as e:
@@ -72,8 +67,7 @@ def _execute_scraper(name):
         return f"❌ {name.upper()} falló"
 
 def run_all_scrapers_parallel():
-    log.info("--- INICIANDO SCRAPING + ACTUALIZACIÓN DE BASE DE DATOS ---")
-    # Mantenemos el paralelismo para que sea rápido
+    log.info("--- INICIANDO SCRAPING PARALELO ---")
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
         futures = [executor.submit(_execute_scraper, n) for n in SCRAPER_REGISTRY]
         concurrent.futures.wait(futures)

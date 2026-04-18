@@ -42,14 +42,24 @@ class ProductDAO:
                 unique_prods = {}
                 for p in products:
                     nombre = p.get('nombre', 'Sin nombre')
-                    qty = p.get('cantidad', 0)
-                    try: qty = float(qty) if qty else 0.0
-                    except: qty = 0.0
+                    try:
+                        precio = float(p.get('precio', 0.0))
+                        p_norm = float(p.get('price_norm', 0.0))
+                        qty = float(p.get('cantidad', 0.0))
+                    except (TypeError, ValueError):
+                        precio, p_norm, qty = 0.0, 0.0, 0.0
 
+                    # TAG fijado a _temp como pediste para nuevos registros
                     unique_prods[nombre] = (
-                        store_id, nombre, "_temp",
-                        float(p.get('precio', 0.0)), float(p.get('price_norm', 0.0)),
-                        qty, p.get('tipo_unidad', 'ud'), p.get('imagen', ''), today_str
+                        store_id, 
+                        nombre, 
+                        "_temp", 
+                        precio, 
+                        p_norm, 
+                        qty, 
+                        p.get('tipo_unidad', 'ud'), 
+                        p.get('image_url', ''), 
+                        today_str
                     )
                 data_list = list(unique_prods.values())
                 psycopg2.extras.execute_values(cur, query, data_list)
@@ -61,7 +71,6 @@ class ProductDAO:
             if conn: self.db.release_connection(conn)
 
     def search_by_tag(self, query_tag: str, order_by: str = "p.price_norm ASC"):
-        """ Búsqueda estricta por similitud en el campo TAG """
         sql = f"""
             SELECT p.*, s.name as store_name
             FROM product p
@@ -69,5 +78,4 @@ class ProductDAO:
             WHERE p.tag ILIKE %s
             ORDER BY {order_by} LIMIT 150
         """
-        formatted_query = f"%{query_tag}%"
-        return self.db.execute_query(sql, (formatted_query,), fetch=True)
+        return self.db.execute_query(sql, (f"%{query_tag}%",), fetch=True)

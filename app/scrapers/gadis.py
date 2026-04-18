@@ -1,58 +1,70 @@
-from app.models.scraper_base import BaseScraper
-from app.config.scrapers_config import GADIS_HEADERS, GADIS_API_CATEGORIES, GADIS_API_SEARCH
 from concurrent.futures import ThreadPoolExecutor
+from app.models.scraper_base import BaseScraper
+from app.config.scrapers_config import GADIS_HEADERS, GADIS_CATEGORIES, GADIS_API_SEARCH
 
 class GadisScraper(BaseScraper):
     def __init__(self):
         super().__init__("GADIS", GADIS_HEADERS)
-        self._session_ready = False
 
-    def _initialize_session(self):
-        if self._session_ready: return True
-        try:
-            # Visita inicial silenciosa para cookies
-            self._session.get("https://www.gadisline.com/", timeout=15)
-            self._session_ready = True
-            return True
-        except:
-            return False
+    def _fetch_page(self, category_id: str, page: int):
+        params = {
+            "page_number": str(page),
+            "rows_per_page": "100",
+            "keep_request": "false",
+            "order_field": "relevance",
+            "sort_type": "asc"
+        }
+        payload = {
+            "minimum_should_match": 1,
+            "category_ids": [category_id]
+        }
 
-    def fetch_category(self, cat_id):
-        payload = {"minimum_should_match": 1, "category_ids": [int(cat_id)]}
-        params = {"page_number": 1, "rows_per_page": 100, "order_field": "relevance", "sort_type": "asc"}
         try:
-            # Importante: Gadis usa POST para las búsquedas/categorías
-            r = self._session.post(GADIS_API_SEARCH, params=params, json=payload, timeout=15)
-            return r.json().get("elements", []) if r.status_code == 200 else []
-        except:
-            return []
+            # self._session ya tiene los GADIS_HEADERS cargados desde el init
+            response = self._session.post(GADIS_API_SEARCH, params=params, json=payload, timeout=20)
+            return response.json() if response.ok else None
+        except Exception as e:
+            self.log.error(f"Error en GADIS (Cat: {category_id}, Pág: {page}): {e}")
+            return None
+
+    def _process_category(self, category_id: str):
+        page = 1
+        while True:
+            data = self._fetch_page(category_id, page)
+            # Cambiado de 'products' a 'elements' según el test exitoso
+            if not data or not data.get('elements'):
+                break
+                
+            products_list = data['elements']
+            for p in products_list:
+                # Extracción de nombre (ES)
+                descriptions = p.get('commercial_description', [])
+                nombre = next((d['value'] for d in descriptions if d['language'] == 'ES'), "Sin nombre")
+                
+                # Extracción de unidad de referencia (ES)
+                suffixes = p.get('price_kilo_litre_suffix', [])
+                unidad = next((s['value'] for s in suffixes if s['language'] == 'ES'), "ud")
+
+                # URL de imagen
+                image_url = p.get('image', {}).get('image', '')
+
+                self.add_product(
+                    name=nombre,
+                    price=p.get('price', 0.0),
+                    reference_price=p.get('price_kilo_litre', 0.0),
+                    unit_type=unidad,
+                    quantity=1.0, # Valor por defecto ya que Gadis lo incluye en el nombre
+                    image_url=image_url
+                )
+            
+            if len(products_list) < 100:
+                break
+            page += 1
 
     def scrape(self):
-        if not self._initialize_session(): return []
-        
-        # Obtenemos categorías o usamos las principales si falla el listado
-        cat_data = self.get_json(GADIS_API_CATEGORIES)
-        cat_ids = [c["id"] for c in cat_data.get("elements", [])] if cat_data else [22601, 22608, 22701, 22801, 22901]
-
-        # Gadis es sensible, usamos pocos workers para evitar bloqueos
-        with ThreadPoolExecutor(max_workers=3) as executor:
-            category_results = executor.map(self.fetch_category, cat_ids)
+        self.log.info("Iniciando motor GADIS...")
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            executor.map(self._process_category, GADIS_CATEGORIES)
             
-            for products in category_results:
-                for p in products:
-                    # Extraer el nombre en español de forma más segura
-                    descriptions = p.get("commercial_description", [])
-                    name = next((d.get("value") for d in descriptions if d.get("language") == "ES"), None)
-                    if not name and descriptions: name = descriptions[0].get("value")
-                    
-                    if not name: continue
-
-                    self.add_product(
-                        name=name,
-                        price=p.get("price"),
-                        reference_price=p.get("price_kilo_litre"),
-                        quantity=p.get("weight"),
-                        unit_type=None,
-                        image_url=p.get("image", {}).get("image")
-                    )
+        self.log.info(f"Gadis completado: {len(self.products)} productos.")
         return self.products

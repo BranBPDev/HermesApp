@@ -3,10 +3,6 @@ import re
 class HermesRefactorer:
 
     @staticmethod
-    def get_manual_tag(name: str) -> str:
-        return "_temp"
-
-    @staticmethod
     def get_normalized_data(name: str, price: float):
         """
         Retorna (price_norm, quantity, unit_type)
