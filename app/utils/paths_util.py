@@ -2,6 +2,11 @@ from pathlib import Path
 import sys
 import os
 
+if getattr(sys, 'frozen', False):
+    cert_path = os.path.join(sys._MEIPASS, 'certifi', 'cacert.pem')
+    os.environ['REQUESTS_CA_BUNDLE'] = cert_path
+    os.environ['SSL_CERT_FILE'] = cert_path
+    
 # BASE DIRECTORY (Donde está el .exe físicamente)
 BASE_DIR = Path(sys.executable).parent
 

@@ -1,9 +1,10 @@
 import customtkinter as ctk
 import threading
 import traceback
+import ctypes
 from app.utils.logger_util import HermesLogger
 from app.utils.update_util import is_latest_version, perform_update
-from app.utils.paths_util import LOGO_ICO, SESSION_JSON
+from app.utils.paths_util import LOGO_ICO, SESSION_JSON, VERSION_JSON
 from app.utils.json_util import read_json_local
 from app.utils.crypto_util import decode_from_base64
 from app.utils.window_util import center_window
@@ -15,6 +16,8 @@ class AppManager:
         self.log.info("--- [START] INICIALIZANDO APP_MANAGER ---")
         
         try:
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(f'BranBPDev.HermesApp.MarketIntelligence.{read_json_local(VERSION_JSON).get("version", "0.0.4")}')
+
             ctk.set_appearance_mode("dark")
             self.root = ctk.CTk()
             self.root.title("HERMESAPP - INTELIGENCIA DE MERCADO")
