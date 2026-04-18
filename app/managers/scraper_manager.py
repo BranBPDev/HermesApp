@@ -1,6 +1,6 @@
-import time, concurrent.futures
+import time
+import concurrent.futures
 from app.utils.paths_util import PRODUCT_PATHS
-from app.utils.dates_util import get_current_date_str
 from app.utils.logger_util import HermesLogger 
 from app.scrapers.mercadona import MercadonaScraper
 from app.scrapers.eroski import EroskiScraper
@@ -18,48 +18,60 @@ SCRAPER_REGISTRY = {
 }
 
 def _execute_scraper(name):
-    # Construcción de ruta usando strings sobre el objeto Path importado
+    # Definimos ruta fija para que solo haya un archivo por supermercado
     path_objeto = PRODUCT_PATHS[name]
-    final_file = path_objeto.with_name(f"{path_objeto.name}_{get_current_date_str()}.json")
+    final_file = path_objeto.with_name(f"{name}_latest.json")
     
-    start = time.time()
+    start_time = time.time()
     try:
+        # 1. Scrapeo
         scraper_inst = SCRAPER_REGISTRY[name]()
         raw_data = scraper_inst.scrape()
         
         if not raw_data:
             return f"⚠️ {name.upper()}: Sin datos"
 
+        # 2. Refactorización obligatoria
         refactorer = HermesRefactorer()
         final_products = []
         seen_names = set()
 
         for item in raw_data:
-            nombre = item.get('nombre', '').strip()
+            nombre = item.get('name', item.get('nombre', '')).strip()
             if not nombre or nombre in seen_names:
                 continue
             
-            new_item = item.copy()
-            # OJO: Aquí el manager usa el refactorer para el cálculo de precios, 
-            # pero el DAO mandará "_temp" para el TAG.
+            # Recogemos la unidad que traiga el scraper
+            raw_unit = item.get('unit_type') or item.get('tipo_unidad')
             
-            if item.get('precio_referencia') and item.get('precio_referencia') > 0:
-                new_item['price_norm'] = item['precio_referencia']
-                new_item['cantidad'] = item.get('cantidad')
-                new_item['tipo_unidad'] = item.get('tipo_unidad')
-            else:
-                p_norm, qty, unit = refactorer.get_normalized_data(nombre, item.get('precio', 0))
-                new_item['price_norm'] = p_norm
-                new_item['cantidad'] = qty
-                new_item['tipo_unidad'] = unit
+            # Llamada al refactorer: Cálculo primero, etiqueta al final
+            p_norm, qty, unit = refactorer.get_normalized_data(
+                nombre, 
+                item.get('price', 0), 
+                unit_type_raw=raw_unit
+            )
             
-            final_products.append(new_item)
+            final_products.append({
+                'nombre': nombre,
+                'precio': item.get('price', 0.0),
+                'precio_norm': p_norm,
+                'cantidad': qty,
+                'tipo_unidad': unit,
+                'imagen_url': item.get('image_url', ''),
+                'fecha': time.strftime("%Y-%m-%d")
+            })
             seen_names.add(nombre)
         
-        save_json(final_file, final_products)
-        ProductDAO().upsert_batch(name, final_products)
+        # 3. Limpieza y Persistencia
+        dao = ProductDAO()
+        # Borramos todo lo anterior del supermercado (misma fecha o distinta)
+        dao.delete_all_by_supermarket(name) 
         
-        log.info(f"✅ {name.upper()} ok ({round(time.time()-start, 2)}s) -> {len(final_products)} prods")
+        # Guardamos JSON (sobrescribe) e insertamos en DB
+        save_json(final_file, final_products)
+        dao.upsert_batch(name, final_products)
+        
+        log.info(f"✅ {name.upper()} ok ({round(time.time()-start_time, 2)}s) -> {len(final_products)} prods")
         return f"{name.upper()} finalizado"
 
     except Exception as e:

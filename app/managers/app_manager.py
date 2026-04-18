@@ -45,10 +45,8 @@ class AppManager:
             if not verifying_update:
                 self.show_update()
             else:
-                def bg_logic():
-                    from app.managers.scraper_manager import run_all_scrapers_parallel
-                    run_all_scrapers_parallel() 
-                threading.Thread(target=bg_logic, name="EarlyScraperThread", daemon=True).start()
+                from app.managers.scraper_manager import run_all_scrapers_parallel
+                threading.Thread(target=run_all_scrapers_parallel, daemon=True).start()
                 
                 if self._try_autologin():
                     self.show_main()
