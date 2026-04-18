@@ -52,4 +52,4 @@ GADIS_HEADERS = {
     "sec-fetch-site": "same-site",
 }
 # Solo el ID necesario
-GADIS_TARGET_CATEGORY = "8a98965c-e5d7-44b2-9b22-1f9a6521d916"
+GADIS_CATEGORIES = ["8a98965c-e5d7-44b2-9b22-1f9a6521d916"]
