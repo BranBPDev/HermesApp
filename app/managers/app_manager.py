@@ -4,7 +4,6 @@ import traceback
 import ctypes
 from app.utils.logger_util import HermesLogger
 from app.utils.update_util import is_latest_version, perform_update
-from app.managers.scraper_manager import run_all_scrapers_parallel
 from app.utils.paths_util import LOGO_ICO, SESSION_JSON, VERSION_JSON
 from app.utils.json_util import read_json_local
 from app.utils.crypto_util import decode_from_base64
@@ -45,13 +44,16 @@ class AppManager:
             verifying_update = is_latest_version()
             if not verifying_update:
                 self.show_update()
-                
-            threading.Thread(target=run_all_scrapers_parallel, name="EarlyScraperThread", daemon=True).start()
-            
-            if self._try_autologin():
-                self.show_main()
             else:
-                self.show_login()
+                def bg_logic():
+                    from app.managers.scraper_manager import run_all_scrapers_parallel
+                    run_all_scrapers_parallel() 
+                threading.Thread(target=bg_logic, name="EarlyScraperThread", daemon=True).start()
+                
+                if self._try_autologin():
+                    self.show_main()
+                else:
+                    self.show_login()
         except Exception:
             self.show_login()
         

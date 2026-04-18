@@ -18,9 +18,9 @@ SCRAPER_REGISTRY = {
 }
 
 def _execute_scraper(name):
-    date_str = get_current_date_str()
     # Construcción de ruta usando strings sobre el objeto Path importado
-    final_file = f"{PRODUCT_PATHS[name]}_{date_str}.json"
+    path_objeto = PRODUCT_PATHS[name]
+    final_file = path_objeto.with_name(f"{path_objeto.name}_{get_current_date_str()}.json")
     
     start = time.time()
     try:
