@@ -92,5 +92,5 @@ class AppManager:
 
     def logout(self):
         if SESSION_JSON.exists(): SESSION_JSON.unlink()
-        self.auth = None 
+        self.auth = None
         self.show_login()
