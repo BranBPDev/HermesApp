@@ -1,26 +1,28 @@
-from pathlib import Path
-import sys
 import os
+import sys
+from pathlib import Path
 
 if getattr(sys, 'frozen', False):
+    # --- MODO EJECUCIÓN (.EXE) ---
     cert_path = os.path.join(sys._MEIPASS, 'certifi', 'cacert.pem')
     os.environ['REQUESTS_CA_BUNDLE'] = cert_path
     os.environ['SSL_CERT_FILE'] = cert_path
     
-# BASE DIRECTORY (Donde está el .exe físicamente)
-BASE_DIR = Path(sys.executable).parent
+    BASE_DIR = Path(sys.executable).parent
+    INTERNAL_DIR = Path(sys._MEIPASS)
+else:
+    # --- MODO DESARROLLO (PYTHON) ---
+    # Usamos la ruta del archivo actual para subir niveles hasta la raíz del proyecto
+    BASE_DIR = Path(__file__).resolve().parent.parent.parent
+    INTERNAL_DIR = BASE_DIR
 
-# INTERNAL DIRECTORY (Dentro del .exe empaquetado)
-# PyInstaller extrae los archivos internos en sys._MEIPASS
-INTERNAL_DIR = Path(sys._MEIPASS) if hasattr(sys, '_MEIPASS') else Path(__file__).parent.parent.parent
-
-# CONFIGURATION - Miramos DENTRO del .exe para el .env
+# CONFIGURACIÓN
 ENV_PATH = INTERNAL_DIR / ".env"
 
-# LOGS
+# LOGS (Ahora BASE_DIR será C:\Users\bran\Desktop\HermesApp en desarrollo)
 LOGS_DIR = BASE_DIR / "app" / "logs"
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
-MAIN_LOG_PATH = LOGS_DIR / "hermesApp.log"
+MAIN_LOG_PATH = LOGS_DIR / "hermes_deploy.log"
 
 # CARPETA TEMPORAL Y DESCARGAS
 DOWNLOAD_FOLDER = BASE_DIR / "temp_download"
@@ -55,6 +57,6 @@ PRODUCT_PATHS = {
     "eroski": SCRAPERS_DIR / "eroski_products"
 }
 
-# GITHUB / REMOTE
+# GITHUB
 LATEST_ZIP_URL = "https://github.com/BranBPDev/HermesApp/releases/latest/download/HermesApp.zip"
 REMOTE_VERSION_JSON = "https://github.com/BranBPDev/HermesApp/releases/latest/download/version.json"
