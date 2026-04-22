@@ -94,3 +94,38 @@ class AppManager:
         if SESSION_JSON.exists(): SESSION_JSON.unlink()
         self.auth = None 
         self.show_login()
+
+    def show_view(self, view_name):
+        """Switch between views inside the Main Window's content area."""
+        # Ensure we are currently in the Main View
+        from app.gui.views.main_window import HermesMainView
+        if not isinstance(self.current_view, HermesMainView):
+            self.log.error("Navegación fallida: No se puede cambiar de vista fuera de MainView")
+            return
+
+        # Access the content area of the HermesMainView
+        container = self.current_view.content_area
+        
+        # Clear previous sub-view
+        for widget in container.winfo_children():
+            widget.destroy()
+
+        try:
+            if view_name == "search":
+                from app.gui.views.search_view import SearchView
+                sub_view = SearchView(container, on_add_to_cart=self._handle_add_to_cart)
+            elif view_name == "cart":
+                from app.gui.views.cart_view import CartView
+                sub_view = CartView(container)
+            else:
+                self.log.warning(f"Vista desconocida: {view_name}")
+                return
+
+            sub_view.pack(expand=True, fill="both")
+        except Exception:
+            self.log.error(f"Error cambiando a vista {view_name}: {traceback.format_exc()}")
+
+    def _handle_add_to_cart(self, product):
+        """Global handler for adding products to cart."""
+        self.log.info(f"Producto añadido: {product.get('name')}")
+        # Here you would typically interface with a CartManager
