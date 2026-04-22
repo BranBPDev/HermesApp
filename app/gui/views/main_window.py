@@ -1,6 +1,6 @@
 import tkinter as tk
 from app.gui.styles.styles import COLOR_BG_DARK, COLOR_BG_SIDE, COLOR_PRIMARY
-from app.gui.views.user_header import UserHeader
+from app.gui.components.user_header import UserHeader
 
 class HermesMainView(tk.Frame):
     def __init__(self, master, app_manager):
