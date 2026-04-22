@@ -16,22 +16,21 @@ class AppManager:
         self.log.info("--- [START] INICIALIZANDO APP_MANAGER ---")
         
         try:
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(f'BranBPDev.HermesApp.MarketIntelligence.{read_json_local(VERSION_JSON).get("version", "0.0.4")}')
+            version = read_json_local(VERSION_JSON).get("version", "0.0.4")
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(f'BranBPDev.HermesApp.MarketIntelligence.{version}')
 
             ctk.set_appearance_mode("dark")
             self.root = ctk.CTk()
             self.root.title("HERMESAPP - INTELIGENCIA DE MERCADO")
             self.root.configure(fg_color=COLOR_BG_DARK)
             
-            # Tamaño inicial 1050x720, centrada y REDIMENSIONABLE
-            center_window(self.root, 800, 500, resizable=True)
+            center_window(self.root, 1050, 720, resizable=True)
             self.root.minsize(800, 500)
             
             if LOGO_ICO.exists():
                 try:
                     self.root.iconbitmap(str(LOGO_ICO))
-                except Exception as e_ico:
-                    self.log.warning(f"Error cargando icono: {e_ico}")
+                except Exception: pass
                 
         except Exception as e:
             self.log.error(f"FALLO CRÍTICO EN CTK INIT: {traceback.format_exc()}")
@@ -41,8 +40,7 @@ class AppManager:
 
     def start(self):
         try:
-            verifying_update = is_latest_version()
-            if not verifying_update:
+            if not is_latest_version():
                 self.show_update()
             else:
                 from app.managers.scraper_manager import run_all_scrapers_parallel
@@ -66,8 +64,7 @@ class AppManager:
             from app.managers.auth_manager import AuthManager
             if not self.auth: self.auth = AuthManager()
             return self.auth.login(u, p)
-        except Exception:
-            return False
+        except Exception: return False
 
     def _clear_root(self):
         if self.current_view:
@@ -94,8 +91,31 @@ class AppManager:
             from app.gui.views.main_window import HermesMainView
             self.current_view = HermesMainView(self.root, self)
             self.current_view.pack(expand=True, fill="both")
+            # Cargar la vista de búsqueda por defecto
+            self.show_view("search")
         except Exception:
             self.log.error(f"Error en show_main: {traceback.format_exc()}")
+
+    def show_view(self, view_name):
+        """Gestiona el cambio de vistas dentro de la zona de contenido."""
+        if not hasattr(self.current_view, "content_area"): return
+        
+        # Limpiar frame de contenido
+        for widget in self.current_view.content_area.winfo_children():
+            widget.destroy()
+
+        if view_name == "search":
+            from app.gui.views.search_view import SearchView
+            v = SearchView(self.current_view.content_area, self.add_to_cart)
+            v.pack(fill="both", expand=True)
+        elif view_name == "cart":
+            from app.gui.views.cart_view import CartView
+            v = CartView(self.current_view.content_area)
+            v.pack(fill="both", expand=True)
+
+    def add_to_cart(self, product):
+        self.log.info(f"Añadido al carrito: {product['nombre']}")
+        # Lógica de persistencia de carrito aquí
 
     def logout(self):
         if SESSION_JSON.exists(): SESSION_JSON.unlink()

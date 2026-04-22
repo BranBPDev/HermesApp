@@ -79,3 +79,15 @@ class ProductDAO:
             ORDER BY {order_by} LIMIT 150
         """
         return self.db.execute_query(sql, (f"%{query_tag}%",), fetch=True)
+    
+    def delete_all_by_supermarket(self, store_name: str):
+        """Borra todos los productos de un supermercado específico."""
+        sql = """
+            DELETE FROM product 
+            WHERE store_id = (SELECT id FROM store WHERE name = %s)
+        """
+        try:
+            self.db.execute_query(sql, (store_name.lower(),), fetch=False)
+            self.log.info(f"Limpieza de productos completada para: {store_name}")
+        except Exception as e:
+            self.log.error(f"Error limpiando productos de {store_name}: {e}")
