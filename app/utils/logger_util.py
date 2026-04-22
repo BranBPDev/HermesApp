@@ -1,5 +1,4 @@
 import logging
-import sys
 from logging.handlers import RotatingFileHandler
 from app.utils.paths_util import MAIN_LOG_PATH
 

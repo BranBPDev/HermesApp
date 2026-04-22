@@ -8,7 +8,7 @@ from app.utils.paths_util import LOGO_ICO, SESSION_JSON, VERSION_JSON
 from app.utils.json_util import read_json_local
 from app.utils.crypto_util import decode_from_base64
 from app.utils.window_util import center_window
-from app.views.styles import COLOR_BG_DARK
+from app.gui.styles.styles import COLOR_BG_DARK
 
 class AppManager:
     def __init__(self):
@@ -75,14 +75,14 @@ class AppManager:
 
     def show_update(self):
         self._clear_root()
-        from app.views.update_view import UpdateView
+        from app.gui.views.update_view import UpdateView
         self.current_view = UpdateView(self.root)
         self.current_view.pack(expand=True, fill="both")
         threading.Thread(target=perform_update, args=(self.current_view.set_progress,), daemon=True).start()
 
     def show_login(self):
         self._clear_root()
-        from app.views.auth_window import AuthView
+        from app.gui.views.auth_window import AuthView
         from app.managers.auth_manager import AuthManager
         if not self.auth: self.auth = AuthManager()
         self.current_view = AuthView(self.root, self.auth, on_success=self.show_main)
@@ -91,7 +91,7 @@ class AppManager:
     def show_main(self):
         self._clear_root()
         try:
-            from app.views.main_window import HermesMainView
+            from app.gui.views.main_window import HermesMainView
             self.current_view = HermesMainView(self.root, self)
             self.current_view.pack(expand=True, fill="both")
         except Exception:
