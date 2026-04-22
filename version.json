@@ -3,7 +3,7 @@
         "tag": "v0.0.4",
         "name": "GUI",
         "description": "En esta actualización se llevará a cabo la implementación de la interfaz gráfica.",
-        "prerelease": true,
+        "prerelease": false,
         "make_latest": true,
         "branch": "main"
     },
