@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from app.views.styles import FONT_TITLE
+from app.gui.styles.styles import FONT_TITLE
 
 class UserHeader(ctk.CTkFrame):
     def __init__(self, master, username, **kwargs):
