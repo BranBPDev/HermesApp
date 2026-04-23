@@ -5,6 +5,7 @@ class MainWindow(tk.Tk):
     def __init__(self, app_manager):
         super().__init__()
         self.app = app_manager
+        self.title("HermesApp") # Restaurado nombre correcto
         self.configure(bg=COLOR_BG_DARK)
         self.active_instances = []
 
@@ -15,9 +16,6 @@ class MainWindow(tk.Tk):
         self.active_instances = []
 
     def set_layout(self, components_config):
-        """
-        config: lista de dicts {'class': Clase, 'relx': f, 'rely': f, 'relw': f, 'relh': f, 'args': {}}
-        """
         self.reset_layout()
         for conf in components_config:
             container = tk.Frame(self, bg=COLOR_BG_DARK)

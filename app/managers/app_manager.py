@@ -1,4 +1,3 @@
-import traceback
 import threading
 from app.gui.main_window import MainWindow
 from app.utils.logger_util import HermesLogger
@@ -12,7 +11,8 @@ class AppManager:
     def __init__(self):
         self.log = HermesLogger.get_logger("APP_MANAGER")
         self.root = MainWindow(self)
-        center_window(self.root, 1000, 650, resizable=True)
+        center_window(self.root, 800, 500, resizable=True)
+        self.root.minsize(800, 500)
         if LOGO_ICO.exists():
             try: self.root.iconbitmap(str(LOGO_ICO))
             except: pass
@@ -20,14 +20,10 @@ class AppManager:
 
     def start(self):
         try:
-            if not is_latest_version():
-                self.show_update()
-            elif self._try_autologin():
-                self.show_main()
-            else:
-                self.show_login()
-        except:
-            self.show_login()
+            if not is_latest_version(): self.show_update()
+            elif self._try_autologin(): self.show_main()
+            else: self.show_login()
+        except: self.show_login()
         self.root.mainloop()
 
     def _try_autologin(self):
@@ -41,7 +37,6 @@ class AppManager:
 
     def show_update(self):
         from app.gui.components.update import Update
-        # Componente único centrado
         instances = self.root.set_layout([{'class': Update, 'relx': 0, 'relw': 1, 'relh': 1}])
         threading.Thread(target=perform_update, args=(instances[0].set_progress,), daemon=True).start()
 
@@ -52,17 +47,10 @@ class AppManager:
         if not self.auth: self.auth = AuthManager()
 
         self.root.set_layout([
-            {'class': Brand, 'relx': 0, 'relw': 0.5, 'relh': 1},
-            {'class': Auth, 'relx': 0.5, 'relw': 0.5, 'relh': 1, 'args': {'on_submit': self._handle_login}}
+            {'class': Brand, 'relx': 0, 'rely': 0, 'relw': 0.5, 'relh': 1},
+            {'class': Auth, 'relx': 0.5, 'rely': 0, 'relw': 0.5, 'relh': 1,
+             'args': {'auth_manager': self.auth, 'on_success': self.show_main}}
         ])
-        self.root.bind("<Return>", lambda e: self._handle_login())
-
-    def _handle_login(self):
-        auth_comp = self.root.active_instances[1]
-        u, p = auth_comp.get_data()
-        success, msg = self.auth.login(u, p)
-        if success: self.show_main()
-        else: auth_comp.show_error(msg)
 
     def show_main(self):
         self.show_view("search")
@@ -76,18 +64,16 @@ class AppManager:
             from app.gui.components.search import Search
             self.root.set_layout([
                 {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1},
-                {'class': Header, 'relx': 0.07, 'relw': 0.93, 'relh': 0.1, 'args': {'username': user}},
-                {'class': Search, 'relx': 0.07, 'rely': 0.1, 'relw': 0.93, 'relh': 0.9, 
+                {'class': Header, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
+                {'class': Search, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88, 
                  'args': {'on_add': self._handle_add_to_cart}}
             ])
-            self.root.bind("<Return>", lambda e: self.root.active_instances[2].execute_search())
-        
         elif view_name == "cart":
             from app.gui.components.cart import Cart
             self.root.set_layout([
                 {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1},
-                {'class': Header, 'relx': 0.07, 'relw': 0.93, 'relh': 0.1, 'args': {'username': user}},
-                {'class': Cart, 'relx': 0.07, 'rely': 0.1, 'relw': 0.93, 'relh': 0.9}
+                {'class': Header, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
+                {'class': Cart, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88}
             ])
 
     def _handle_add_to_cart(self, product):
