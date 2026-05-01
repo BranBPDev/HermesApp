@@ -24,8 +24,6 @@ class AuthManager:
             if user_id:
                 self.current_user_id = user_id
                 self.username = username
-                # Aquí iría la lógica de 'remember' si fuera necesaria, 
-                # por ahora solo evitamos el error de argumento.
                 return True, "Success"
             
             return False, f"Contraseña incorrecta para el usuario {username}."
@@ -33,9 +31,9 @@ class AuthManager:
             self.log.error(f"Error en login: {e}")
             return False, "Error interno del sistema."
 
-    def register(self, username, password):
+    def register(self, username, email, password):
         try:
-            user_id = self.user_dao.create_user(username, password)
+            user_id = self.user_dao.create_user(username, email, password)
             if user_id:
                 self.current_user_id = user_id
                 self.username = username

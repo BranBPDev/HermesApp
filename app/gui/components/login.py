@@ -5,7 +5,7 @@ from app.gui.styles.styles import (
     COLOR_ERROR, FONT_TITLE, FONT_CB, FONT_ERROR, INPUT_W, BADGE_W, Y_OFF
 )
 
-class Auth(tk.Frame):
+class Login(tk.Frame):
     def __init__(self, master, auth_manager, on_success, **kwargs):
         super().__init__(master, bg=COLOR_BG_DARK)
         self.auth, self.on_success = auth_manager, on_success
@@ -15,7 +15,7 @@ class Auth(tk.Frame):
         self.canvas = tk.Canvas(self, bg=COLOR_BG_DARK, highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
 
-        self.badge_info = CBadge(self.canvas, "i Sin cuenta, se creará", color=COLOR_TEXT_DIM)
+        # Se mantiene solo badge_auto
         self.badge_auto = CBadge(self.canvas, "⚠ Auto-registro habilitado", color=COLOR_PRIMARY)
         self.input_user = CInput(self.canvas, "USUARIO", "Introduce tu usuario")
         self.input_pass = CInput(self.canvas, "CONTRASEÑA", "Introduce tu contraseña", True, self._toggle_pass)
@@ -34,10 +34,9 @@ class Auth(tk.Frame):
         self.canvas.create_text(cx, cy + Y_OFF["TITLE"], text="Acceso al Sistema", 
                                fill=COLOR_TEXT_MAIN, font=FONT_TITLE, anchor="center")
         
-        # BADGES
-        self.badge_info.draw(sx, cy + Y_OFF["BADGES"])
+        # BADGES (Solo dibujamos el de auto-registro si remember_me está activo)
         if self.remember_me.get():
-            self.badge_auto.draw(sx + BADGE_W + 10, cy + Y_OFF["BADGES"])
+            self.badge_auto.draw(sx, cy + Y_OFF["BADGES"])
 
         # INPUTS
         self.input_user.draw(sx, cy + Y_OFF["USER"])

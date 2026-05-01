@@ -7,11 +7,11 @@ class UserDAO:
         self.db = DBManager()
         self.log = HermesLogger.get_logger("USER_DAO")
 
-    def create_user(self, username, password):
+    def create_user(self, username, email, password):
         password_hash = hash_password(password)
-        sql = 'INSERT INTO "user" (username, password_hash) VALUES (%s, %s) RETURNING id'
+        sql = 'INSERT INTO "user" (username, email, password_hash) VALUES (%s, %s, %s) RETURNING id'
         try:
-            result = self.db.execute_query(sql, (username.lower(), password_hash), fetch=True)
+            result = self.db.execute_query(sql, (username.lower(), email.lower(), password_hash), fetch=True)
             return result[0]['id'] if result else None
         except Exception as e:
             self.log.error(f"Error creando usuario: {e}")
