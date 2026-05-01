@@ -73,9 +73,10 @@ class Register(tk.Frame):
             self._render()
             return
 
-        # Ahora pasamos el flag 'remember' al registro también
-        success, message = self.auth.register(u, e, p, remember=self.remember_me.get()) 
+        # Recibimos éxito y mensaje
+        success, message = self.auth.register(u, e, p) 
         if success:
+            # Aquí decides si guardas sesión antes de pasar al main
             self.on_success()
         else:
             self.error_message = message
