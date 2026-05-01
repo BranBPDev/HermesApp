@@ -17,11 +17,11 @@ class UserDAO:
             self.log.error(f"Error creando usuario: {e}")
             return None
 
-    def validate_user(self, username, password):
-        sql = 'SELECT id, password_hash FROM "user" WHERE username = %s'
-        result = self.db.execute_query(sql, (username.lower(),), fetch=True)
+    def validate_user(self, identifier, password):
+        sql = 'SELECT id, username, password_hash FROM "user" WHERE username = %s OR email = %s'
+        result = self.db.execute_query(sql, (identifier.lower(), identifier.lower()), fetch=True)
         
         if result:
             if check_password(password, result[0]['password_hash']):
-                return result[0]['id']
-        return None
+                return result[0]['id'], result[0]['username']
+        return None, None

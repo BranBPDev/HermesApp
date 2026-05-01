@@ -13,20 +13,18 @@ class AuthManager:
             cls._instance.username = None
         return cls._instance
 
-    def login(self, username, password, remember=False):
-        # Validación de campos vacíos
-        if not username.strip() or not password.strip():
+    def login(self, identifier, password, remember=False):
+        if not identifier.strip() or not password.strip():
             return False, "Por favor, rellena todos los campos."
 
         try:
-            # Validación de credenciales
-            user_id = self.user_dao.validate_user(username, password)
+            user_id, real_username = self.user_dao.validate_user(identifier, password)
             if user_id:
                 self.current_user_id = user_id
-                self.username = username
+                self.username = real_username
                 return True, "Success"
             
-            return False, f"Contraseña incorrecta para el usuario {username}."
+            return False, "Credenciales incorrectas."
         except Exception as e:
             self.log.error(f"Error en login: {e}")
             return False, "Error interno del sistema."

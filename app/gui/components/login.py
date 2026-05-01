@@ -15,9 +15,9 @@ class Login(tk.Frame):
         self.canvas = tk.Canvas(self, bg=COLOR_BG_DARK, highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
 
-        # Se mantiene solo badge_auto
         self.badge_auto = CBadge(self.canvas, "⚠ Auto-registro habilitado", color=COLOR_PRIMARY)
-        self.input_user = CInput(self.canvas, "USUARIO", "Introduce tu usuario")
+        # Acepta ambos identificadores
+        self.input_user = CInput(self.canvas, "USUARIO / EMAIL", "Introduce usuario o email")
         self.input_pass = CInput(self.canvas, "CONTRASEÑA", "Introduce tu contraseña", True, self._toggle_pass)
         self.btn_login = CButton(self.canvas, "ENTRAR AL SISTEMA", self._handle_login)
         
@@ -30,19 +30,15 @@ class Login(tk.Frame):
         cx, cy = w / 2, h / 2
         sx = cx - (INPUT_W / 2)
 
-        # TÍTULO
         self.canvas.create_text(cx, cy + Y_OFF["TITLE"], text="Acceso al Sistema", 
                                fill=COLOR_TEXT_MAIN, font=FONT_TITLE, anchor="center")
         
-        # BADGES (Solo dibujamos el de auto-registro si remember_me está activo)
         if self.remember_me.get():
             self.badge_auto.draw(sx, cy + Y_OFF["BADGES"])
 
-        # INPUTS
         self.input_user.draw(sx, cy + Y_OFF["USER"])
         self.input_pass.draw(sx, cy + Y_OFF["PASS"], self.pass_visible)
 
-        # CHECKBOX
         cb_y = cy + Y_OFF["CB"]
         cb_tag = "checkbox_group"
         self.canvas.create_rectangle(sx, cb_y, sx+16, cb_y+16, outline=COLOR_PRIMARY, width=2, tags=cb_tag)
@@ -52,10 +48,8 @@ class Login(tk.Frame):
                                fill=COLOR_TEXT_DIM, font=FONT_CB, anchor="w", tags=cb_tag)
         self.canvas.tag_bind(cb_tag, "<Button-1>", lambda e: self._toggle_rem())
 
-        # BOTÓN
         self.btn_login.draw(sx, cy + Y_OFF["BTN"])
 
-        # ERROR
         if self.error_message:
             self.canvas.create_text(cx, cy + Y_OFF["ERROR"], text=self.error_message,
                                     fill=COLOR_ERROR, font=FONT_ERROR, anchor="center")

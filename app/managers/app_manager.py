@@ -41,14 +41,15 @@ class AppManager:
         threading.Thread(target=perform_update, args=(instances[0].set_progress,), daemon=True).start()
 
     def show_login(self):
-        from app.gui.components.brand import Brand
-        from app.gui.components.auth import Auth
+        from app.gui.components.register import Register
+        from app.gui.components.login import Login
         from app.managers.auth_manager import AuthManager
         if not self.auth: self.auth = AuthManager()
 
         self.root.set_layout([
-            {'class': Brand, 'relx': 0, 'rely': 0, 'relw': 0.5, 'relh': 1},
-            {'class': Auth, 'relx': 0.5, 'rely': 0, 'relw': 0.5, 'relh': 1,
+            {'class': Register, 'relx': 0, 'rely': 0, 'relw': 0.5, 'relh': 1,
+             'args': {'auth_manager': self.auth, 'on_register_success': self.show_main}},
+            {'class': Login, 'relx': 0.5, 'rely': 0, 'relw': 0.5, 'relh': 1,
              'args': {'auth_manager': self.auth, 'on_success': self.show_main}}
         ])
 
