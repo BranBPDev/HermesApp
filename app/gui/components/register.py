@@ -1,8 +1,8 @@
 import tkinter as tk
-from app.gui.components.visual_elements import CButton, CInput
+from app.gui.components.visual_elements import CButton, CInput, CBadge
 from app.gui.styles.styles import (
-    COLOR_BG_SIDE, COLOR_TEXT_MAIN, COLOR_ERROR, 
-    FONT_TITLE, FONT_ERROR, INPUT_W, Y_OFF
+    COLOR_BG_SIDE, COLOR_PRIMARY, COLOR_TEXT_MAIN, COLOR_TEXT_DIM, 
+    COLOR_ERROR, FONT_TITLE, FONT_CB, FONT_ERROR, INPUT_W, Y_OFF
 )
 
 class Register(tk.Frame):
@@ -10,15 +10,17 @@ class Register(tk.Frame):
         super().__init__(master, bg=COLOR_BG_SIDE)
         self.auth = auth_manager
         self.on_success = on_register_success
+        self.pass_visible = False
+        self.remember_me = tk.BooleanVar(value=False)
         self.error_message = ""
         
         self.canvas = tk.Canvas(self, bg=COLOR_BG_SIDE, highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
 
-        # Campos específicos de registro
+        self.badge_auto = CBadge(self.canvas, "⚠ Auto-login habilitado", color=COLOR_PRIMARY)
         self.input_user = CInput(self.canvas, "USUARIO", "Elige un nombre de usuario")
         self.input_email = CInput(self.canvas, "EMAIL", "tu@email.com")
-        self.input_pass = CInput(self.canvas, "CONTRASEÑA", "Crea una contraseña", True)
+        self.input_pass = CInput(self.canvas, "CONTRASEÑA", "Crea una contraseña", True, self._toggle_pass)
         self.btn_reg = CButton(self.canvas, "CREAR CUENTA", self._handle_register)
         
         self.canvas.bind("<Configure>", lambda e: self._render())
@@ -32,15 +34,37 @@ class Register(tk.Frame):
         self.canvas.create_text(cx, cy + Y_OFF["TITLE"], text="Registro de Usuario", 
                                fill=COLOR_TEXT_MAIN, font=FONT_TITLE, anchor="center")
         
-        # Ajustamos los Y_OFF para que quepan 3 inputs en lugar de 2
-        self.input_user.draw(sx, cy + Y_OFF["USER"] - 40)
-        self.input_email.draw(sx, cy + Y_OFF["USER"] + 30)
-        self.input_pass.draw(sx, cy + Y_OFF["PASS"] + 30, False)
-        self.btn_reg.draw(sx, cy + Y_OFF["BTN"] + 20)
+        # Badge de auto-login
+        if self.remember_me.get():
+            self.badge_auto.draw(sx, cy + Y_OFF["BADGES"])
+
+        self.input_user.draw(sx, cy + Y_OFF["USER"] - 60)
+        self.input_email.draw(sx, cy + Y_OFF["USER"] + 10)
+        self.input_pass.draw(sx, cy + Y_OFF["PASS"] + 10, self.pass_visible)
+
+        # Checkbox "Recordar"
+        cb_y = cy + Y_OFF["CB"] + 10
+        cb_tag = "checkbox_reg"
+        self.canvas.create_rectangle(sx, cb_y, sx+16, cb_y+16, outline=COLOR_PRIMARY, width=2, tags=cb_tag)
+        if self.remember_me.get():
+            self.canvas.create_text(sx+8, cb_y+8, text="✔", fill=COLOR_PRIMARY, font=FONT_CB, tags=cb_tag)
+        self.canvas.create_text(sx+25, cb_y+8, text="Recordar mis credenciales", 
+                               fill=COLOR_TEXT_DIM, font=FONT_CB, anchor="w", tags=cb_tag)
+        self.canvas.tag_bind(cb_tag, "<Button-1>", lambda e: self._toggle_rem())
+
+        self.btn_reg.draw(sx, cy + Y_OFF["BTN"] + 10)
 
         if self.error_message:
-            self.canvas.create_text(cx, cy + Y_OFF["ERROR"] + 20, text=self.error_message,
+            self.canvas.create_text(cx, cy + Y_OFF["ERROR"] + 25, text=self.error_message,
                                     fill=COLOR_ERROR, font=FONT_ERROR, anchor="center")
+
+    def _toggle_rem(self):
+        self.remember_me.set(not self.remember_me.get())
+        self._render()
+
+    def _toggle_pass(self):
+        self.pass_visible = not self.pass_visible
+        self._render()
 
     def _handle_register(self):
         u, e, p = self.input_user.get(), self.input_email.get(), self.input_pass.get()
@@ -49,7 +73,8 @@ class Register(tk.Frame):
             self._render()
             return
 
-        success, message = self.auth.register(u, e, p) # Asumiendo que auth_manager tendrá register
+        # Ahora pasamos el flag 'remember' al registro también
+        success, message = self.auth.register(u, e, p, remember=self.remember_me.get()) 
         if success:
             self.on_success()
         else:

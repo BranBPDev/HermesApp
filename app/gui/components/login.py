@@ -15,7 +15,7 @@ class Login(tk.Frame):
         self.canvas = tk.Canvas(self, bg=COLOR_BG_DARK, highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
 
-        self.badge_auto = CBadge(self.canvas, "⚠ Auto-registro habilitado", color=COLOR_PRIMARY)
+        self.badge_auto = CBadge(self.canvas, "⚠ Auto-login habilitado", color=COLOR_PRIMARY)
         # Acepta ambos identificadores
         self.input_user = CInput(self.canvas, "USUARIO / EMAIL", "Introduce usuario o email")
         self.input_pass = CInput(self.canvas, "CONTRASEÑA", "Introduce tu contraseña", True, self._toggle_pass)
