@@ -18,12 +18,11 @@ class AuthManager:
 
     def _save_session(self, identifier, password):
         try:
-            session_data = {
+            data = {
                 "u": encode_to_base64(identifier),
                 "p": encode_to_base64(password)
             }
-            save_json(SESSION_JSON, session_data)
-            self.log.info("Sesión guardada localmente.")
+            save_json(SESSION_JSON, data)
         except Exception as e:
             self.log.error(f"Error al guardar sesión: {e}")
 
@@ -52,7 +51,6 @@ class AuthManager:
                 self.current_user_id = user_id
                 self.username = username
                 if remember:
-                    # Usamos el email o username para el auto-login futuro
                     self._save_session(username, password)
                 return True, "Registro exitoso"
         except Exception as e:
