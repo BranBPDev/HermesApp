@@ -20,7 +20,7 @@ class Register(tk.Frame):
         self.canvas.pack(fill="both", expand=True)
 
         self.badge_auto = CBadge(self.canvas, "⚠ Auto-login habilitado", color=COLOR_PRIMARY)
-        self.input_user = CInput(self.canvas, "USUARIO", "Elige un nombre de usuario")
+        self.input_user = CInput(self.canvas, "USUARIO", "Nombre de usuario")
         self.input_email = CInput(self.canvas, "EMAIL", "tu@email.com")
         self.input_pass = CInput(self.canvas, "CONTRASEÑA", "Crea una contraseña", True, self._toggle_pass)
         self.btn_reg = CButton(self.canvas, "CREAR CUENTA", self._handle_register)
