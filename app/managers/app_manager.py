@@ -44,6 +44,9 @@ class AppManager:
         from app.gui.components.register import Register
         from app.gui.components.login import Login
         from app.managers.auth_manager import AuthManager
+        from app.utils.paths_util import LOGO_PNG
+        import tkinter as tk
+
         if not self.auth: self.auth = AuthManager()
 
         self.root.set_layout([
@@ -52,6 +55,13 @@ class AppManager:
             {'class': Login, 'relx': 0.5, 'rely': 0, 'relw': 0.5, 'relh': 1,
              'args': {'auth_manager': self.auth, 'on_success': self.show_main}}
         ])
+
+        try:
+            self.img_logo = tk.PhotoImage(file=str(LOGO_PNG))
+            logo_lbl = tk.Label(self.root, image=self.img_logo, bg=self.root["bg"], bd=0, highlightthickness=0)
+            logo_lbl.place(relx=0.5, rely=0.5, anchor="center")
+        except Exception as e:
+            self.log.error(f"No se pudo cargar el logo central: {e}")
 
     def show_main(self):
         self.show_view("search")

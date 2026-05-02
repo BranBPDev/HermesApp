@@ -5,7 +5,7 @@ class MainWindow(tk.Tk):
     def __init__(self, app_manager):
         super().__init__()
         self.app = app_manager
-        self.title("HermesApp") # Restaurado nombre correcto
+        self.title("HermesApp")
         self.configure(bg=COLOR_BG_DARK)
         self.active_instances = []
 
