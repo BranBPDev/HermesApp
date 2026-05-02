@@ -45,25 +45,15 @@ class AppManager:
         from app.gui.components.login import Login
         from app.managers.auth_manager import AuthManager
         from app.utils.paths_util import LOGO_PNG
-        import tkinter as tk
 
         if not self.auth: self.auth = AuthManager()
 
         self.root.set_layout([
             {'class': Register, 'relx': 0, 'rely': 0, 'relw': 0.5, 'relh': 1,
-             'args': {'auth_manager': self.auth, 'on_register_success': self.show_main}},
+             'args': {'auth_manager': self.auth, 'on_register_success': self.show_main, 'logo': LOGO_PNG}},
             {'class': Login, 'relx': 0.5, 'rely': 0, 'relw': 0.5, 'relh': 1,
-             'args': {'auth_manager': self.auth, 'on_success': self.show_main}}
+             'args': {'auth_manager': self.auth, 'on_success': self.show_main, 'logo': LOGO_PNG}}
         ])
-
-        try:
-            self.img_logo = tk.PhotoImage(file=str(LOGO_PNG))
-            logo_canvas = tk.Canvas(self.root, width=self.img_logo.width(), height=self.img_logo.height(),
-                                    bg=self.root["bg"], highlightthickness=0, bd=0)
-            logo_canvas.create_image(self.img_logo.width()//2, self.img_logo.height()//2, image=self.img_logo)
-            logo_canvas.place(relx=0.5, rely=0.15, anchor="center")
-        except Exception as e:
-            self.log.error(f"No se pudo cargar el logo central: {e}")
 
     def show_main(self):
         self.show_view("search")

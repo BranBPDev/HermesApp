@@ -1,13 +1,15 @@
 import tkinter as tk
 from app.gui.components.visual_elements import CButton, CInput, CBadge
+from PIL import Image, ImageTk
 from app.gui.styles.styles import (
     COLOR_BG_SIDE, COLOR_PRIMARY, COLOR_TEXT_MAIN, COLOR_TEXT_DIM, 
     COLOR_ERROR, FONT_TITLE, FONT_CB, FONT_ERROR, INPUT_W, Y_OFF
 )
 
 class Register(tk.Frame):
-    def __init__(self, master, auth_manager, on_register_success, **kwargs):
+    def __init__(self, master, auth_manager, on_register_success, logo, **kwargs):
         super().__init__(master, bg=COLOR_BG_SIDE)
+        self.logo = ImageTk.PhotoImage(Image.open(str(logo)).resize((100, 100), Image.Resampling.LANCZOS))
         self.auth = auth_manager
         self.on_success = on_register_success
         self.pass_visible = False
@@ -32,7 +34,8 @@ class Register(tk.Frame):
         sx = cx - (INPUT_W / 2)
         half_w = (INPUT_W / 2) - 5
 
-        self.canvas.create_line(w, 0, w, h, fill=COLOR_PRIMARY, dash=(2, 10), width=2)
+        self.canvas.create_line(w, 40, w, h-40, fill=COLOR_PRIMARY, dash=(2, 20), width=4)
+        self.canvas.create_image(w, h * 0.15, image=self.logo, anchor="center")
         self.canvas.create_text(cx, cy + Y_OFF["TITLE"], text="Registro de Usuario", 
                                fill=COLOR_TEXT_MAIN, font=FONT_TITLE, anchor="center")
         

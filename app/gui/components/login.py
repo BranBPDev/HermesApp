@@ -1,13 +1,15 @@
 import tkinter as tk
 from app.gui.components.visual_elements import CButton, CInput, CBadge
+from PIL import Image, ImageTk
 from app.gui.styles.styles import (
     COLOR_BG_DARK, COLOR_PRIMARY, COLOR_TEXT_MAIN, COLOR_TEXT_DIM, 
     COLOR_ERROR, FONT_TITLE, FONT_CB, FONT_ERROR, INPUT_W, BADGE_W, Y_OFF
 )
 
 class Login(tk.Frame):
-    def __init__(self, master, auth_manager, on_success, **kwargs):
+    def __init__(self, master, auth_manager, on_success, logo, **kwargs):
         super().__init__(master, bg=COLOR_BG_DARK)
+        self.logo = ImageTk.PhotoImage(Image.open(str(logo)).resize((100, 100), Image.Resampling.LANCZOS))
         self.auth, self.on_success = auth_manager, on_success
         self.pass_visible, self.remember_me = False, tk.BooleanVar(value=False)
         self.error_message = ""
@@ -29,7 +31,8 @@ class Login(tk.Frame):
         w, h = self.canvas.winfo_width(), self.canvas.winfo_height()
         cx, cy = w / 2, h / 2
         sx = cx - (INPUT_W / 2)
-
+        
+        self.canvas.create_image(0, h * 0.15, image=self.logo, anchor="center")
         self.canvas.create_text(cx, cy + Y_OFF["TITLE"], text="Acceso al Sistema", 
                                fill=COLOR_TEXT_MAIN, font=FONT_TITLE, anchor="center")
         
