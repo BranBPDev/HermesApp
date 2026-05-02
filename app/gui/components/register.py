@@ -35,11 +35,10 @@ class Register(tk.Frame):
         half_w = (INPUT_W / 2) - 5
 
         self.canvas.create_line(w, 40, w, h-40, fill=COLOR_PRIMARY, dash=(2, 20), width=4)
-        self.canvas.create_image(w, h * 0.15, image=self.logo, anchor="center")
+        self.canvas.create_image(0, h * 0.15, image=self.logo, anchor="center")
         self.canvas.create_text(cx, cy + Y_OFF["TITLE"], text="Registro de Usuario", 
                                fill=COLOR_TEXT_MAIN, font=FONT_TITLE, anchor="center")
         
-        # Badge de auto-login
         if self.remember_me.get():
             self.badge_auto.draw(sx, cy + Y_OFF["BADGES"])
 
@@ -47,16 +46,20 @@ class Register(tk.Frame):
         self.input_email.draw(sx + half_w + 10, cy + Y_OFF["USER"], w=half_w)
         self.input_pass.draw(sx, cy + Y_OFF["PASS"], self.pass_visible)
 
-        # Checkbox "Recordar"
         cb_y = cy + Y_OFF["CB"]
         cb_tag = "checkbox_reg"
+
+        # Area de click expandida
+        self.canvas.create_rectangle(sx, cb_y, sx + INPUT_W, cb_y + 20, fill="", outline="", tags=cb_tag)
+        
         self.canvas.create_rectangle(sx, cb_y, sx+16, cb_y+16, outline=COLOR_PRIMARY, width=2, tags=cb_tag)
         if self.remember_me.get():
             self.canvas.create_text(sx+8, cb_y+8, text="✔", fill=COLOR_PRIMARY, font=FONT_CB, tags=cb_tag)
+        
         self.canvas.create_text(sx+25, cb_y+8, text="Recordar mis credenciales", 
                                fill=COLOR_TEXT_DIM, font=FONT_CB, anchor="w", tags=cb_tag)
+        
         self.canvas.tag_bind(cb_tag, "<Button-1>", lambda e: self._toggle_rem())
-
         self.btn_reg.draw(sx, cy + Y_OFF["BTN"])
 
         if self.error_message:
@@ -78,10 +81,8 @@ class Register(tk.Frame):
             self._render()
             return
 
-        # Recibimos éxito y mensaje
-        success, message = self.auth.register(u, e, p) 
+        success, message = self.auth.register(u, e, p, remember=self.remember_me.get()) 
         if success:
-            # Aquí decides si guardas sesión antes de pasar al main
             self.on_success()
         else:
             self.error_message = message

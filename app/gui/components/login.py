@@ -18,7 +18,6 @@ class Login(tk.Frame):
         self.canvas.pack(fill="both", expand=True)
 
         self.badge_auto = CBadge(self.canvas, "⚠ Auto-login habilitado", color=COLOR_PRIMARY)
-        # Acepta ambos identificadores
         self.input_user = CInput(self.canvas, "USUARIO / EMAIL", "Introduce usuario o email")
         self.input_pass = CInput(self.canvas, "CONTRASEÑA", "Introduce tu contraseña", True, self._toggle_pass)
         self.btn_login = CButton(self.canvas, "ENTRAR AL SISTEMA", self._handle_login)
@@ -32,7 +31,7 @@ class Login(tk.Frame):
         cx, cy = w / 2, h / 2
         sx = cx - (INPUT_W / 2)
         
-        self.canvas.create_image(0, h * 0.15, image=self.logo, anchor="center")
+        self.canvas.create_image(cx, h * 0.15, image=self.logo, anchor="center")
         self.canvas.create_text(cx, cy + Y_OFF["TITLE"], text="Acceso al Sistema", 
                                fill=COLOR_TEXT_MAIN, font=FONT_TITLE, anchor="center")
         
@@ -44,13 +43,18 @@ class Login(tk.Frame):
 
         cb_y = cy + Y_OFF["CB"]
         cb_tag = "checkbox_group"
+        
+        # Area de click expandida (rectangulo invisible sobre toda la linea)
+        self.canvas.create_rectangle(sx, cb_y, sx + INPUT_W, cb_y + 20, fill="", outline="", tags=cb_tag)
+        
         self.canvas.create_rectangle(sx, cb_y, sx+16, cb_y+16, outline=COLOR_PRIMARY, width=2, tags=cb_tag)
         if self.remember_me.get():
             self.canvas.create_text(sx+8, cb_y+8, text="✔", fill=COLOR_PRIMARY, font=FONT_CB, tags=cb_tag)
+        
         self.canvas.create_text(sx+25, cb_y+8, text="Recordar mis credenciales", 
                                fill=COLOR_TEXT_DIM, font=FONT_CB, anchor="w", tags=cb_tag)
+        
         self.canvas.tag_bind(cb_tag, "<Button-1>", lambda e: self._toggle_rem())
-
         self.btn_login.draw(sx, cy + Y_OFF["BTN"])
 
         if self.error_message:
