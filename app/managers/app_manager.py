@@ -58,8 +58,10 @@ class AppManager:
 
         try:
             self.img_logo = tk.PhotoImage(file=str(LOGO_PNG))
-            logo_lbl = tk.Label(self.root, image=self.img_logo, bg=self.root["bg"], bd=0, highlightthickness=0)
-            logo_lbl.place(relx=0.5, rely=0.5, anchor="center")
+            logo_canvas = tk.Canvas(self.root, width=self.img_logo.width(), height=self.img_logo.height(),
+                                    bg=self.root["bg"], highlightthickness=0, bd=0)
+            logo_canvas.create_image(self.img_logo.width()//2, self.img_logo.height()//2, image=self.img_logo)
+            logo_canvas.place(relx=0.5, rely=0.15, anchor="center")
         except Exception as e:
             self.log.error(f"No se pudo cargar el logo central: {e}")
 
