@@ -9,33 +9,58 @@ from app.utils.paths_util import VERSION_JSON, REMOTE_VERSION_JSON, LATEST_ZIP_U
 log = HermesLogger.get_logger("UPDATER")
 
 def is_latest_version():
+    log.info("Verificando si existe una nueva versión disponible...")
     try:
-        return read_json(VERSION_JSON)["version"] == read_json(REMOTE_VERSION_JSON)["version"]
+        local_v = read_json(VERSION_JSON)["version"]
+        remote_v = read_json(REMOTE_VERSION_JSON)["version"]
+        log.info(f"Versión local: {local_v} | Versión remota: {remote_v}")
+        
+        is_latest = local_v == remote_v
+        if is_latest:
+            log.info("La aplicación ya está en la última versión.")
+        else:
+            log.info("Nueva versión detectada. Se requiere actualización.")
+            
+        return is_latest
     except Exception as e:
         log.error(f"No se pudo verificar versión: {e}")
         return True
 
 def perform_update(progress_callback=None):
-    log.info("Iniciando descarga de actualización...")
+    log.info("Iniciando proceso de actualización del sistema...")
     try:
-        if DOWNLOAD_FOLDER.exists(): shutil.rmtree(DOWNLOAD_FOLDER)
+        # Preparación de directorios
+        if DOWNLOAD_FOLDER.exists():
+            log.info(f"Limpiando directorio de descarga previo: {DOWNLOAD_FOLDER}")
+            shutil.rmtree(DOWNLOAD_FOLDER)
+        
+        log.info(f"Creando directorio de descarga: {DOWNLOAD_FOLDER}")
         DOWNLOAD_FOLDER.mkdir(parents=True)
         
+        # Descarga
+        log.info(f"Descargando archivo desde: {LATEST_ZIP_URL}")
+        log.info(f"Destino temporal: {TEMP_ZIP_PATH}")
         download_files((LATEST_ZIP_URL,), (TEMP_ZIP_PATH,), progress_callback=progress_callback)
+        log.info("Descarga completada exitosamente.")
         
+        # Descompresión
         invoke_progress(progress_callback, 0.95, "Descomprimiendo archivos...")
+        log.info(f"Iniciando descompresión de {TEMP_ZIP_PATH} en {DOWNLOAD_FOLDER}")
         unzip_file(TEMP_ZIP_PATH, DOWNLOAD_FOLDER)
-        log.info("Descompresión lista. Lanzando proceso de reemplazo...")
+        log.info("Descompresión finalizada correctamente.")
 
+        # Preparación para el reemplazo
         pid = os.getpid()
         exe_path = sys.executable
         log_path = str(MAIN_LOG_PATH)
-
+        
+        log.info(f"PID actual: {pid}")
+        log.info(f"Executable path: {exe_path}")
+        log.info("Cerrando sistema de logs interno para liberar archivos...")
         logging.shutdown()
 
-        # LOGICA INTACTA.
-        # Refuerzo de limpieza de entorno: Eliminamos todas las variables que empiezan por PYI o MEI
-        # que son las que bloquean la carga de la DLL en el relanzamiento.
+        # Construcción del comando PowerShell con logs integrados
+        log.info("Preparando comando de PowerShell para el reemplazo de archivos y reinicio...")
         ps_command = (
             f"(Get-Process -Id {pid} -ErrorAction SilentlyContinue).WaitForExit(); "
             f"'--- PS_UPDATER: Ejecutando limpieza ---' | Out-File '{log_path}' -Append -Encoding utf8; "
@@ -54,6 +79,7 @@ def perform_update(progress_callback=None):
             f"Start-Process -FilePath '{exe_path}' -WorkingDirectory '{BASE_DIR}'"
         )
 
+        log.info("Lanzando proceso externo (PowerShell) y cerrando aplicación actual.")
         subprocess.Popen(
             f'start /min powershell.exe -NoProfile -WindowStyle Hidden -Command "{ps_command}"',
             shell=True,
