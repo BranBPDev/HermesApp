@@ -1,4 +1,4 @@
-import os, subprocess, sys, shutil, logging
+import os, subprocess, sys, shutil
 from app.utils.logger_util import HermesLogger
 from app.utils.json_util import read_json
 from app.utils.download_util import download_files
@@ -8,25 +8,73 @@ from app.utils.paths_util import VERSION_JSON, REMOTE_VERSION_JSON, LATEST_ZIP_U
 
 log = HermesLogger.get_logger("UPDATER")
 
+def launch_update_process():
+    """
+    Finaliza el proceso actual y lanza el script de PowerShell para 
+    reemplazar los archivos y reiniciar la aplicación.
+    """
+    pid = os.getpid()
+    exe_path = sys.executable
+    log_path = str(MAIN_LOG_PATH)
+    
+    log.info(f"PID actual: {pid}")
+    log.info(f"Ruta del ejecutable: {exe_path}")
+    log.info("Cerrando sistema de logs interno para liberar archivos...")
+    HermesLogger.shutdown_logs()
+
+    # Comando PowerShell optimizado para limpieza y relanzamiento
+    ps_command = (
+        f"(Get-Process -Id {pid} -ErrorAction SilentlyContinue).WaitForExit(); "
+        f"'--- PS_UPDATER: Ejecutando limpieza ---' | Out-File '{log_path}' -Append -Encoding utf8; "
+        f"Get-ChildItem -Path '{BASE_DIR}' | ForEach-Object {{ "
+        f"  if ($_.Name -ne '{DOWNLOAD_FOLDER.name}' -and $_.Name -ne '{os.path.basename(TEMP_ZIP_PATH)}') {{ "
+        f"    if ($_.Name -eq 'app') {{ "
+        f"      Get-ChildItem -Path $_.FullName | Where-Object {{ $_.Name -ne 'logs' }} | Remove-Item -Recurse -Force "
+        f"    }} else {{ Remove-Item -Path $_.FullName -Recurse -Force }} "
+        f"  }} "
+        f"}}; "
+        f"Copy-Item -Path '{DOWNLOAD_FOLDER}\\*' -Destination '{BASE_DIR}' -Recurse -Force; "
+        f"Remove-Item -Path '{DOWNLOAD_FOLDER}' -Recurse -Force; "
+        f"Start-Sleep -Seconds 1; "
+        f"'--- PS_UPDATER: Relanzando aplicacion ---' | Out-File '{log_path}' -Append -Encoding utf8; "
+        f"Get-ChildItem Env: | Where-Object {{ $_.Name -like '*PYI*' -or $_.Name -like '*MEI*' }} | ForEach-Object {{ Remove-Item $_.PSPath }}; "
+        f"Start-Process -FilePath '{exe_path}' -WorkingDirectory '{BASE_DIR}'"
+    )
+
+    log.info("Lanzando proceso externo (PowerShell) y cerrando aplicación actual.")
+    subprocess.Popen(
+        f'start /min powershell.exe -NoProfile -WindowStyle Hidden -Command "{ps_command}"',
+        shell=True,
+        creationflags=0x00000008 | 0x00000200
+    )
+    
+    os._exit(0)
+
 def is_latest_version():
+    """
+    Compara la versión local con la remota.
+    """
     log.info("Verificando si existe una nueva versión disponible...")
     try:
-        local_v = read_json(VERSION_JSON)["version"]
-        remote_v = read_json(REMOTE_VERSION_JSON)["version"]
-        log.info(f"Versión local: {local_v} | Versión remota: {remote_v}")
+        local_version = read_json(VERSION_JSON)["version"]
+        remote_version = read_json(REMOTE_VERSION_JSON)["version"]
+        log.info(f"Versión local: {local_version} | Versión remota: {remote_version}")
         
-        is_latest = local_v == remote_v
-        if is_latest:
+        up_to_date = local_version == remote_version
+        if up_to_date:
             log.info("La aplicación ya está en la última versión.")
         else:
             log.info("Nueva versión detectada. Se requiere actualización.")
             
-        return is_latest
+        return up_to_date
     except Exception as e:
         log.error(f"No se pudo verificar versión: {e}")
         return True
 
 def perform_update(progress_callback=None):
+    """
+    Gestiona la descarga, descompresión e inicio del proceso de reemplazo.
+    """
     log.info("Iniciando proceso de actualización del sistema...")
     try:
         # Preparación de directorios
@@ -46,47 +94,16 @@ def perform_update(progress_callback=None):
         # Descompresión
         invoke_progress(progress_callback, 0.95, "Descomprimiendo archivos...")
         log.info(f"Iniciando descompresión de {TEMP_ZIP_PATH} en {DOWNLOAD_FOLDER}")
-        unzip_file(TEMP_ZIP_PATH, DOWNLOAD_FOLDER)
-        log.info("Descompresión finalizada correctamente.")
-
-        # Preparación para el reemplazo
-        pid = os.getpid()
-        exe_path = sys.executable
-        log_path = str(MAIN_LOG_PATH)
         
-        log.info(f"PID actual: {pid}")
-        log.info(f"Executable path: {exe_path}")
-        log.info("Cerrando sistema de logs interno para liberar archivos...")
-        logging.shutdown()
-
-        # Construcción del comando PowerShell con logs integrados
-        log.info("Preparando comando de PowerShell para el reemplazo de archivos y reinicio...")
-        ps_command = (
-            f"(Get-Process -Id {pid} -ErrorAction SilentlyContinue).WaitForExit(); "
-            f"'--- PS_UPDATER: Ejecutando limpieza ---' | Out-File '{log_path}' -Append -Encoding utf8; "
-            f"Get-ChildItem -Path '{BASE_DIR}' | ForEach-Object {{ "
-            f"  if ($_.Name -ne '{DOWNLOAD_FOLDER.name}' -and $_.Name -ne '{os.path.basename(TEMP_ZIP_PATH)}') {{ "
-            f"    if ($_.Name -eq 'app') {{ "
-            f"      Get-ChildItem -Path $_.FullName | Where-Object {{ $_.Name -ne 'logs' }} | Remove-Item -Recurse -Force "
-            f"    }} else {{ Remove-Item -Path $_.FullName -Recurse -Force }} "
-            f"  }} "
-            f"}}; "
-            f"Copy-Item -Path '{DOWNLOAD_FOLDER}\\*' -Destination '{BASE_DIR}' -Recurse -Force; "
-            f"Remove-Item -Path '{DOWNLOAD_FOLDER}' -Recurse -Force; "
-            f"Start-Sleep -Seconds 1; "
-            f"'--- PS_UPDATER: Relanzando aplicacion ---' | Out-File '{log_path}' -Append -Encoding utf8; "
-            f"Get-ChildItem Env: | Where-Object {{ $_.Name -like '*PYI*' -or $_.Name -like '*MEI*' }} | ForEach-Object {{ Remove-Item $_.PSPath }}; "
-            f"Start-Process -FilePath '{exe_path}' -WorkingDirectory '{BASE_DIR}'"
-        )
-
-        log.info("Lanzando proceso externo (PowerShell) y cerrando aplicación actual.")
-        subprocess.Popen(
-            f'start /min powershell.exe -NoProfile -WindowStyle Hidden -Command "{ps_command}"',
-            shell=True,
-            creationflags=0x00000008 | 0x00000200
-        )
-        
-        os._exit(0)
+        if unzip_file(TEMP_ZIP_PATH, DOWNLOAD_FOLDER):
+            log.info("Descompresión finalizada correctamente.")
+            log.info(f"Eliminando archivo temporal: {TEMP_ZIP_PATH}")
+            if os.path.exists(TEMP_ZIP_PATH):
+                os.remove(TEMP_ZIP_PATH)
+            
+            launch_update_process()
+        else:
+            log.error("Fallo en la descompresión. El proceso de actualización se ha detenido.")
 
     except Exception as e:
         log.critical(f"Error fatal en el updater: {e}")

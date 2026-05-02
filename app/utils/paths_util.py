@@ -31,7 +31,6 @@ MAIN_LOG_PATH = LOGS_DIR / "hermesApp.log"
 
 # --- CARPETA TEMPORAL Y DESCARGAS ---
 DOWNLOAD_FOLDER = BASE_DIR / "temp_download"
-DOWNLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 TEMP_ZIP_PATH = DOWNLOAD_FOLDER / "update.zip"
 
 # --- ASSETS (Imágenes, Logos) ---

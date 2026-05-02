@@ -25,5 +25,9 @@ class HermesLogger:
 
         HermesLogger._loggers[name] = logger
         return logger
+    
+    @staticmethod
+    def shutdown_logs():
+        logging.shutdown()
 
 sys_log = HermesLogger.get_logger("SYSTEM")
