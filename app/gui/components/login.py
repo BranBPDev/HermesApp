@@ -44,9 +44,7 @@ class Login(tk.Frame):
 
         cb_y = cy + Y_OFF["CB"]
         cb_tag = "checkbox_group"
-        
-        # Área de click ampliada (rectángulo invisible que cubre la línea)
-        self.canvas.create_rectangle(sx, cb_y, sx + INPUT_W, cb_y + 16, fill="", outline="", tags=cb_tag)
+        self.canvas.create_rectangle(sx, cb_y, sx + INPUT_W, cb_y + 16, fill=COLOR_BG_DARK, outline=COLOR_BG_DARK, tags=cb_tag)
         self.canvas.create_rectangle(sx, cb_y, sx+16, cb_y+16, outline=COLOR_PRIMARY, width=2, tags=cb_tag)
         if self.remember_me.get():
             self.canvas.create_text(sx+8, cb_y+8, text="✔", fill=COLOR_PRIMARY, font=FONT_CB, tags=cb_tag)

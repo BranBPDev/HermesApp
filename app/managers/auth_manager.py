@@ -24,7 +24,7 @@ class AuthManager:
             }
             save_json(SESSION_JSON, data)
         except Exception as e:
-            self.log.error(f"Error al guardar sesión: {e}")
+            self.log.error(f"Error guardando sesión: {e}")
 
     def login(self, identifier, password, remember=False):
         if not identifier.strip() or not password.strip():

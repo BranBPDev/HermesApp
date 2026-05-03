@@ -47,10 +47,10 @@ class Register(tk.Frame):
         self.input_email.draw(sx + half_w + 10, cy + Y_OFF["USER"], w=half_w)
         self.input_pass.draw(sx, cy + Y_OFF["PASS"], self.pass_visible)
 
-        # Checkbox "Recordar" con área ampliada
+        # Checkbox "Recordar"
         cb_y = cy + Y_OFF["CB"]
         cb_tag = "checkbox_reg"
-        self.canvas.create_rectangle(sx, cb_y, sx + INPUT_W, cb_y + 16, fill="", outline="", tags=cb_tag)
+        self.canvas.create_rectangle(sx, cb_y, sx + INPUT_W, cb_y + 16, fill=COLOR_BG_SIDE, outline=COLOR_BG_SIDE, tags=cb_tag)
         self.canvas.create_rectangle(sx, cb_y, sx+16, cb_y+16, outline=COLOR_PRIMARY, width=2, tags=cb_tag)
         if self.remember_me.get():
             self.canvas.create_text(sx+8, cb_y+8, text="✔", fill=COLOR_PRIMARY, font=FONT_CB, tags=cb_tag)
@@ -79,9 +79,10 @@ class Register(tk.Frame):
             self._render()
             return
 
-        # Recibimos éxito y mensaje pasando el flag remember
+        # Recibimos éxito y mensaje
         success, message = self.auth.register(u, e, p, remember=self.remember_me.get()) 
         if success:
+            # Aquí decides si guardas sesión antes de pasar al main
             self.on_success()
         else:
             self.error_message = message
