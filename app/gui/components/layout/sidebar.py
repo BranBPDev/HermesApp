@@ -62,21 +62,12 @@ class Sidebar(tk.Frame):
         return set_active
 
     def _action(self, tag, set_active_self):
-        app = self.master.master.app
-        
+        app = self.master.master.app # AppManager
         if tag == "logout":
             app.logout()
-        else:
-            if tag == self.active_tag:
-                return  # ya está activo, no hacer nada
-            
-            # Desactivar el anterior
-            if self.active_setter:
-                self.active_setter(False)
-            
-            # Activar el nuevo
+        elif tag != self.active_tag:
+            if self.active_setter: self.active_setter(False)
             set_active_self(True)
             self.active_tag = tag
             self.active_setter = set_active_self
-            
-            app.show_view(tag)
+            app.show_view(tag) # Esto llamará a MainWindow.set_layout con CartSection o SearchSection

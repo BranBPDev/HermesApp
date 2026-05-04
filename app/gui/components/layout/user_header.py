@@ -1,5 +1,5 @@
 import tkinter as tk
-from app.gui.components.visual_elements import ShapeDrawer
+from app.gui.components.shared.visual_elements import ShapeDrawer
 from app.gui.styles.styles import (
     COLOR_BG_DARK, COLOR_TEXT_MAIN, COLOR_BADGE_BG, 
     COLOR_TEXT_DIM, FONT_TITLE, COLOR_ONLINE

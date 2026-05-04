@@ -75,7 +75,7 @@ class AppManager:
 
     def show_update(self):
         self.log.info("Cargando componente de actualización en la interfaz...")
-        from app.gui.components.update import Update
+        from app.gui.components.shared.update import Update
         instances = self.root.set_layout([{'class': Update, 'relx': 0, 'relw': 1, 'relh': 1}])
         
         self.log.info("Iniciando hilo secundario para la ejecución de la actualización (daemon=True).")
@@ -83,8 +83,8 @@ class AppManager:
 
     def show_login(self):
         self.log.info("Cargando vista de autenticación (Registro y Login)...")
-        from app.gui.components.register import Register
-        from app.gui.components.login import Login
+        from app.gui.components.auth.register import Register
+        from app.gui.components.auth.login import Login
         from app.managers.auth_manager import AuthManager
         from app.utils.paths_util import LOGO_PNG
 
@@ -106,12 +106,12 @@ class AppManager:
 
     def show_view(self, view_name):
         self.log.info(f"Cambiando vista activa a: {view_name}")
-        from app.gui.components.sidebar import Sidebar
+        from app.gui.components.layout.sidebar import Sidebar
         from app.gui.components.header import Header
         user = self.auth.username if self.auth else "Usuario"
 
         if view_name == "search":
-            from app.gui.components.search import Search
+            from app.gui.components.sections.search.search_section import Search
             self.root.set_layout([
                 {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1},
                 {'class': Header, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
@@ -120,7 +120,7 @@ class AppManager:
             ])
             self.log.info("Vista 'search' renderizada.")
         elif view_name == "cart":
-            from app.gui.components.cart import Cart
+            from app.gui.components.sections.cart.cart_section import Cart
             self.root.set_layout([
                 {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1},
                 {'class': Header, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
