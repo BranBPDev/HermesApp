@@ -39,7 +39,7 @@ class GUIManager:
         if view_name == "search":
             from app.gui.components.sections.search.search_section import SearchSection
             layout = [
-                {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1},
+                {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1, 'args': {'active_tab': 'search'}},
                 {'class': UserHeader, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
                 {'class': SearchSection, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88, 
                  'args': {'on_add': on_add_func}}
@@ -47,7 +47,7 @@ class GUIManager:
         elif view_name == "cart":
             from app.gui.components.sections.cart.cart_section import CartSection
             layout = [
-                {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1},
+                {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1, 'args': {'active_tab': 'cart'}},
                 {'class': UserHeader, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
                 {'class': CartSection, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88}
             ]

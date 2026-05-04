@@ -2,72 +2,52 @@ import tkinter as tk
 from app.gui.styles.styles import COLOR_BG_SIDE, COLOR_PRIMARY
 
 class Sidebar(tk.Frame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, active_tab="search", **kwargs):
         super().__init__(master, bg=COLOR_BG_SIDE)
         self.canvas = tk.Canvas(self, bg=COLOR_BG_SIDE, highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
         
-        self.active_tag = "search"
-        self.active_setter = None  # guardará la función set_active del botón activo
-        self.canvas.bind("<Configure>", lambda e: self._draw())
+        self.active_tag = active_tab
+        self.buttons = {} 
 
-    def _draw(self):
-        self.canvas.delete("all")
+        self._create_buttons()
+        self.canvas.bind("<Configure>", lambda e: self._reposition())
+
+    def _create_buttons(self):
+        btn_defs = [("🔍", "search"), ("🛒", "cart"), ("⏻", "logout")]
+        
+        for icon, tag in btn_defs:
+            color = COLOR_PRIMARY if tag == self.active_tag else "white"
+            item = self.canvas.create_text(
+                0, 0, text=icon, font=("Roboto", 20), fill=color, tags=tag, anchor="center"
+            )
+            
+            self.buttons[tag] = {"id": item}
+
+            # Eventos
+            self.canvas.tag_bind(tag, "<Enter>", lambda e, i=item: self.canvas.itemconfig(i, font=("Roboto", 26), fill=COLOR_PRIMARY))
+            self.canvas.tag_bind(tag, "<Leave>", lambda e, t=tag: self._on_leave(t))
+            self.canvas.tag_bind(tag, "<Button-1>", lambda e, t=tag: self._action(t))
+
+    def _on_leave(self, tag):
+        item_id = self.buttons[tag]["id"]
+        is_active = (tag == self.active_tag)
+        color = COLOR_PRIMARY if is_active else "white"
+        self.canvas.itemconfig(item_id, font=("Roboto", 20), fill=color)
+
+    def _reposition(self):
+        w = self.canvas.winfo_width()
         h = self.canvas.winfo_height()
+        if w <= 1: return
         
-        # Guardamos los setters devueltos por _btn
-        setter_search = self._btn(35, 50, "🔍", "search")
-        setter_cart = self._btn(35, 110, "🛒", "cart")
-        setter_logout = self._btn(35, h-40, "⏻", "logout")
-        
-        # Al inicio, activamos el search
-        self.active_setter = setter_search
-        self.active_setter(True)  # activamos el search
+        x_center = w / 2
+        self.canvas.coords(self.buttons["search"]["id"], x_center, 50)
+        self.canvas.coords(self.buttons["cart"]["id"], x_center, 110)
+        self.canvas.coords(self.buttons["logout"]["id"], x_center, h - 40)
 
-    def _btn(self, x, y, icon, tag):
-        # Creamos el texto
-        item = self.canvas.create_text(
-            x, y, 
-            text=icon, 
-            font=("Roboto", 20), 
-            fill="white",  # inicialmente blanco
-            tags=tag,
-            anchor="center"
-        )
-        
-        # Función para activar/desactivar ESTE botón
-        def set_active(active):
-            color = COLOR_PRIMARY if active else "white"
-            self.canvas.itemconfig(item, fill=color)
-        
-        # Hover: solo cambia el tamaño y color temporal
-        def on_enter(e):
-            self.canvas.itemconfig(item, font=("Roboto", 26), fill=COLOR_PRIMARY)
-        
-        def on_leave(e):
-            # Al salir, restauramos tamaño y color según estado activo actual
-            # ¿Cómo saber si está activo? Necesitamos saber si este tag es el activo global
-            # Para no complicar, podemos guardar el estado activo en una variable local
-            # Pero como set_active ya sabe si está activo, lo mejor es que on_leave pregunte
-            # si el tag actual es igual a self.active_tag. Para eso necesitamos capturar tag
-            es_activo = (tag == self.active_tag)
-            color_final = COLOR_PRIMARY if es_activo else "white"
-            self.canvas.itemconfig(item, font=("Roboto", 20), fill=color_final)
-        
-        self.canvas.tag_bind(tag, "<Enter>", on_enter)
-        self.canvas.tag_bind(tag, "<Leave>", on_leave)
-        self.canvas.tag_bind(tag, "<Button-1>", lambda e: self._action(tag, set_active))
-        
-        # Devolvemos la función set_active para que el sidebar la use
-        return set_active
-
-    def _action(self, tag, set_active_self):
-        app = self.master.master.app # AppManager
+    def _action(self, tag):
+        app = self.master.master.app # Acceso al AppManager
         if tag == "logout":
             app.logout()
         elif tag != self.active_tag:
-            if self.active_setter: self.active_setter(False)
-            set_active_self(True)
-            self.active_tag = tag
-            self.active_setter = set_active_self
-            app.show_view(tag) # Esto llamará a MainWindow.set_layout con CartSection o SearchSection
+            app.show_view(tag)
