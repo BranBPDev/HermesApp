@@ -111,20 +111,20 @@ class AppManager:
         user = self.auth.username if self.auth else "Usuario"
 
         if view_name == "search":
-            from app.gui.components.sections.search.search_section import Search
+            from app.gui.components.sections.search.search_section import SearchSection
             self.root.set_layout([
                 {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1},
                 {'class': UserHeader, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
-                {'class': Search, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88, 
-                 'args': {'on_add': self._handle_add_to_cart}}
+                {'class': SearchSection, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88, 
+                'args': {'on_add': self._handle_add_to_cart}}
             ])
             self.log.info("Vista 'search' renderizada.")
         elif view_name == "cart":
-            from app.gui.components.sections.cart.cart_section import Cart
+            from app.gui.components.sections.cart.cart_section import CartSection
             self.root.set_layout([
                 {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1},
                 {'class': UserHeader, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
-                {'class': Cart, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88}
+                {'class': CartSection, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88}
             ])
             self.log.info("Vista 'cart' renderizada.")
 
