@@ -10,6 +10,10 @@ from app.gui.styles.styles import (
     COLOR_PRIMARY, FONT_LABEL, FONT_INPUT
 )
 from app.managers.product_manager import ProductManager
+from app.utils.logger_util import HermesLogger
+
+# Inicializamos el logger específico para la interfaz de búsqueda
+logger = HermesLogger.get_logger("SEARCH_GUI")
 
 class Search(tk.Frame):
     def __init__(self, master, on_add, **kwargs):
@@ -48,7 +52,7 @@ class Search(tk.Frame):
 
         # 2. Definición de áreas
         header_y = 110
-        footer_h = 60
+        footer_h = 75 # Un poco más alto para mejor visual del footer
         table_start_y = 150
         available_height = h - table_start_y - footer_h
         row_h = 65
@@ -121,31 +125,55 @@ class Search(tk.Frame):
             # 6. Precio Unitario (Centrado)
             self.canvas.create_text(col_punit, y, text=f"{p['price_norm']}€/{p['unit_type']}", fill=COLOR_TEXT_INACTIVE, font=FONT_LABEL, anchor="center")
 
-            # 7. Botón añadir (Centrado)
-            btn_tag = f"add_{i}_{p.get('id')}"
-            ShapeDrawer.rounded_rect(self.canvas, col_acc-15, y-15, 30, 30, 5, fill=COLOR_PRIMARY, tags=btn_tag)
-            self.canvas.create_text(col_acc, y, text="+", fill="white", font=FONT_INPUT, tags=btn_tag, anchor="center")
-            self.canvas.tag_bind(btn_tag, "<Button-1>", lambda e, prod=p: self.on_add(prod))
+            # 7. Botón añadir (Interactividad: Hover, Active)
+            self._draw_add_button(col_acc, y, p, i)
+
+    def _draw_add_button(self, x, y, product, index):
+        tag = f"btn_add_{index}"
+        
+        # Elementos del botón
+        rect_id = ShapeDrawer.rounded_rect(self.canvas, x-15, y-15, 30, 30, 5, fill=COLOR_PRIMARY, tags=tag)
+        text_id = self.canvas.create_text(x, y, text="+", fill="white", font=FONT_INPUT, tags=tag, anchor="center")
+
+        # Eventos
+        def on_enter(e): self.canvas.itemconfig(rect_id, fill="#d4a017") # Hover
+        def on_leave(e): self.canvas.itemconfig(rect_id, fill=COLOR_PRIMARY) # Normal
+        def on_press(e): # Active (Efecto de hundimiento)
+            self.canvas.move(tag, 1, 1)
+            self.canvas.itemconfig(rect_id, fill="#b08512")
+        def on_release(e):
+            self.canvas.move(tag, -1, -1)
+            self.canvas.itemconfig(rect_id, fill="#d4a017")
+            self.on_add(product)
+
+        self.canvas.tag_bind(tag, "<Enter>", on_enter)
+        self.canvas.tag_bind(tag, "<Leave>", on_leave)
+        self.canvas.tag_bind(tag, "<Button-1>", on_press)
+        self.canvas.tag_bind(tag, "<ButtonRelease-1>", on_release)
 
     def _draw_pagination(self, w, h, footer_h):
         footer_y = h - (footer_h / 2)
         
-        # Rectángulo de fondo para el footer fijo
-        self.canvas.create_rectangle(0, h - footer_h, w, h, fill=COLOR_BG_DARK, outline="")
-        self.canvas.create_line(30, h - footer_h, w - 30, h - footer_h, fill="#222222")
+        # Fondo visual del footer (un tono más claro que el fondo general para destacar)
+        self.canvas.create_rectangle(0, h - footer_h, w, h, fill="#121212", outline="")
+        self.canvas.create_line(0, h - footer_h, w, h - footer_h, fill=COLOR_PRIMARY, width=2)
 
-        page_text = f"Página {self.pm.current_page + 1}"
-        self.canvas.create_text(w/2, footer_y, text=page_text, fill=COLOR_TEXT_INACTIVE, font=FONT_LABEL, anchor="center")
+        page_text = f"PÁGINA {self.pm.current_page + 1}"
+        self.canvas.create_text(w/2, footer_y, text=page_text, fill="white", font=FONT_LABEL, anchor="center")
         
         if self.pm.current_page > 0:
-            prev_tag = "prev_page"
-            self.canvas.create_text(w/2 - 100, footer_y, text="< ANTERIOR", fill=COLOR_PRIMARY, font=FONT_LABEL, tags=prev_tag, anchor="center")
-            self.canvas.tag_bind(prev_tag, "<Button-1>", lambda e: self._change_page(-1))
+            self._draw_nav_btn(w/2 - 120, footer_y, "< ANTERIOR", lambda: self._change_page(-1))
 
         if self.pm.has_more():
-            next_tag = "next_page"
-            self.canvas.create_text(w/2 + 100, footer_y, text="SIGUIENTE >", fill=COLOR_PRIMARY, font=FONT_LABEL, tags=next_tag, anchor="center")
-            self.canvas.tag_bind(next_tag, "<Button-1>", lambda e: self._change_page(1))
+            self._draw_nav_btn(w/2 + 120, footer_y, "SIGUIENTE >", lambda: self._change_page(1))
+
+    def _draw_nav_btn(self, x, y, text, command):
+        tag = f"nav_{text.strip()}"
+        tid = self.canvas.create_text(x, y, text=text, fill=COLOR_PRIMARY, font=FONT_LABEL, tags=tag, anchor="center")
+        
+        self.canvas.tag_bind(tag, "<Enter>", lambda e: self.canvas.itemconfig(tid, fill="white"))
+        self.canvas.tag_bind(tag, "<Leave>", lambda e: self.canvas.itemconfig(tid, fill=COLOR_PRIMARY))
+        self.canvas.tag_bind(tag, "<Button-1>", lambda e: command())
 
     def _change_page(self, delta):
         if delta > 0: self.pm.current_page += 1
@@ -165,9 +193,13 @@ class Search(tk.Frame):
     def _download_and_prepare_img(self, url, x, y, temp_id):
         try:
             resp = requests.get(url, timeout=3)
+            resp.raise_for_status()
             img = Image.open(BytesIO(resp.content)).resize((40, 40), Image.Resampling.LANCZOS)
             self.after(0, lambda: self._render_downloaded_image(url, img, x, y, temp_id))
-        except: pass
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error de red al descargar imagen: {url} | Motivo: {e}")
+        except Exception as e:
+            logger.error(f"Error inesperado procesando imagen: {url} | Error: {e}")
 
     def _render_downloaded_image(self, url, pil_img, x, y, temp_id):
         photo = ImageTk.PhotoImage(pil_img)
