@@ -45,11 +45,10 @@ class AppManager:
         self.gui.show_auth(self.auth, self.show_main)
 
     def show_main(self):
-        self.gui.show_main_layout(self.auth)
         self.show_view("search")
 
     def show_view(self, view_name):
-        self.gui.show_view(view_name, self._handle_add_to_cart)
+        self.gui.show_view(view_name, self.auth, self._handle_add_to_cart)
 
     def _handle_add_to_cart(self, product):
         self.log.info(f"Producto añadido al carrito: {product.get('name', 'Desconocido')}")

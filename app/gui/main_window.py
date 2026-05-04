@@ -1,5 +1,5 @@
 import tkinter as tk
-from app.gui.styles.styles import COLOR_BG_DARK, COLOR_BG_SIDE
+from app.gui.styles.styles import COLOR_BG_DARK
 
 class MainWindow(tk.Tk):
     def __init__(self, app_manager):
@@ -7,49 +7,23 @@ class MainWindow(tk.Tk):
         self.app = app_manager
         self.title("HermesApp")
         self.configure(bg=COLOR_BG_DARK)
-        
-        # 1. Contenedor del Sidebar (Fijo)
-        self.sidebar_container = tk.Frame(self, bg=COLOR_BG_SIDE)
-        self.sidebar_container.place(relx=0, rely=0, relwidth=0.07, relheight=1)
-        
-        # 2. Contenedor del Header (Fijo)
-        self.header_container = tk.Frame(self, bg=COLOR_BG_DARK)
-        self.header_container.place(relx=0.07, rely=0, relwidth=0.93, relheight=0.12)
-        
-        # 3. Contenedor de Contenido (Dinámico)
-        self.content_container = tk.Frame(self, bg=COLOR_BG_DARK)
-        self.content_container.place(relx=0.07, rely=0.12, relwidth=0.93, relheight=0.88)
-        
-        self.sidebar_instance = None
-        self.header_instance = None
+        self.active_instances = []
 
-    def set_static_layout(self, sidebar_class, header_class, header_args):
-        """Dibuja los componentes que no cambian"""
-        for w in self.sidebar_container.winfo_children(): w.destroy()
-        for w in self.header_container.winfo_children(): w.destroy()
-        
-        self.sidebar_instance = sidebar_class(self.sidebar_container)
-        self.sidebar_instance.pack(fill="both", expand=True)
-        
-        self.header_instance = header_class(self.header_container, **header_args)
-        self.header_instance.pack(fill="both", expand=True)
-
-    def set_view(self, view_class, args):
-        """Cambia solo el contenido central"""
-        for w in self.content_container.winfo_children(): w.destroy()
+    def reset_layout(self):
         self.unbind("<Return>")
-        
-        instance = view_class(self.content_container, **args)
-        instance.pack(fill="both", expand=True)
-        
-        # Actualizar estado visual del sidebar si existe
-        if self.sidebar_instance:
-            # Determinamos el tag basado en la clase para mantener el icono encendido
-            tag = "search" if "Search" in view_class.__name__ else "cart"
-            self.sidebar_instance.update_active_visual(tag)
-
-    def full_reset(self):
-        """Limpiar todo para volver al login/update"""
         for widget in self.winfo_children():
             widget.destroy()
-        # Re-crear contenedores básicos si es necesario o manejar layouts distintos
+        self.active_instances = []
+
+    def set_layout(self, components_config):
+        self.reset_layout()
+        for conf in components_config:
+            container = tk.Frame(self, bg=COLOR_BG_DARK)
+            container.place(
+                relx=conf.get('relx', 0), rely=conf.get('rely', 0),
+                relwidth=conf.get('relw', 1), relheight=conf.get('relh', 1)
+            )
+            instance = conf['class'](container, **conf.get('args', {}))
+            instance.pack(fill="both", expand=True)
+            self.active_instances.append(instance)
+        return self.active_instances

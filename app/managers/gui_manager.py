@@ -18,31 +18,41 @@ class GUIManager:
             try: self.root.iconbitmap(str(LOGO_ICO))
             except: pass
 
+    def show_update(self, perform_update_func):
+        from app.gui.components.shared.update import Update
+        instances = self.root.set_layout([{'class': Update, 'relx': 0, 'relw': 1, 'relh': 1}])
+        threading.Thread(target=perform_update_func, args=(instances[0].set_progress,), daemon=True).start()
+
     def show_auth(self, auth_manager, on_login_success):
         from app.gui.components.auth.register import Register
         from app.gui.components.auth.login import Login
-        # En login no queremos sidebar, usamos un layout limpio
-        for w in self.root.winfo_children(): w.pack_forget(); w.place_forget()
-        
-        f1 = tk.Frame(self.root, bg="#0F0F0F")
-        f1.place(relx=0, relw=0.5, relh=1)
-        Register(f1, auth_manager=auth_manager, on_register_success=on_login_success, logo=LOGO_PNG).pack(fill="both", expand=True)
-        
-        f2 = tk.Frame(self.root, bg="#0F0F0F")
-        f2.place(relx=0.5, relw=0.5, relh=1)
-        Login(f2, auth_manager=auth_manager, on_success=on_login_success, logo=LOGO_PNG).pack(fill="both", expand=True)
+        self.root.set_layout([
+            {'class': Register, 'relx': 0, 'rely': 0, 'relw': 0.5, 'relh': 1,
+             'args': {'auth_manager': auth_manager, 'on_register_success': on_login_success, 'logo': LOGO_PNG}},
+            {'class': Login, 'relx': 0.5, 'rely': 0, 'relw': 0.5, 'relh': 1,
+             'args': {'auth_manager': auth_manager, 'on_success': on_login_success, 'logo': LOGO_PNG}}
+        ])
 
-    def show_main_layout(self, auth_manager):
+    def show_view(self, view_name, auth_manager, on_add_func):
         user = auth_manager.username if auth_manager else "Usuario"
-        self.root.set_static_layout(Sidebar, UserHeader, {'username': user})
-
-    def show_view(self, view_name, on_add_func):
+        
         if view_name == "search":
             from app.gui.components.sections.search.search_section import SearchSection
-            self.root.set_view(SearchSection, {'on_add': on_add_func})
+            layout = [
+                {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1, 'args': {'current_view': 'search'}},
+                {'class': UserHeader, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
+                {'class': SearchSection, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88, 
+                 'args': {'on_add': on_add_func}}
+            ]
         elif view_name == "cart":
             from app.gui.components.sections.cart.cart_section import CartSection
-            self.root.set_view(CartSection, {})
+            layout = [
+                {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1, 'args': {'current_view': 'cart'}},
+                {'class': UserHeader, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
+                {'class': CartSection, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88}
+            ]
+        
+        self.root.set_layout(layout)
 
     def start_loop(self):
         self.root.mainloop()
