@@ -11,6 +11,8 @@ from app.gui.styles.styles import (
 )
 from app.managers.product_manager import ProductManager
 from app.utils.logger_util import HermesLogger
+# Importamos tus headers configurados
+from app.config.scrapers_config import EROSKI_HEADERS
 
 # Solo añadimos el logger
 logger = HermesLogger.get_logger("SEARCH_GUI")
@@ -184,8 +186,9 @@ class Search(tk.Frame):
 
     def _download_and_prepare_img(self, url, x, y, temp_id):
         try:
-            resp = requests.get(url, timeout=3)
-            resp.raise_for_status() # Lanza error si no es 200
+            # Usamos tus EROSKI_HEADERS que incluyen User-Agent, Referer, etc.
+            resp = requests.get(url, headers=EROSKI_HEADERS, timeout=5)
+            resp.raise_for_status() 
             img = Image.open(BytesIO(resp.content)).resize((40, 40), Image.Resampling.LANCZOS)
             self.after(0, lambda: self._render_downloaded_image(url, img, x, y, temp_id))
         except Exception as e:
