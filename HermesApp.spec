@@ -2,9 +2,11 @@
 import os
 import certifi
 from PyInstaller.building.build_main import Analysis, PYZ, EXE
+from PyInstaller.utils.hooks import collect_submodules
 
 project_root = os.path.abspath(os.getcwd())
 
+auto_hidden_imports = collect_submodules('app')
 a = Analysis(
     ['main.py'],
     pathex=[project_root],
@@ -18,25 +20,7 @@ a = Analysis(
         'PIL',
         'bcrypt',
         'psycopg2',
-        # UTILS
-        'app.utils.json_util', 
-        'app.utils.update_util', 
-        'app.utils.logger_util',
-        'app.utils.paths_util',
-        'app.utils.crypto_util',
-        # MANAGERS
-        'app.managers.product_manager',
-        'app.managers.app_manager',
-        'app.managers.auth_manager',
-        # VIEWS
-        'app.views.auth_window',
-        'app.views.main_window',
-        'app.views.styles',
-        # COMPONENTS (Los nuevos que añadimos)
-        'app.components.pagination_footer',
-        'app.components.product_row',
-        'app.components.scrollable_list',
-        'app.components.user_header'
+        *auto_hidden_imports
     ],
     hookspath=[],
     runtime_hooks=[],
@@ -67,5 +51,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['logo.ico'],
+    icon=['app/assets/logo.ico'],
 )
