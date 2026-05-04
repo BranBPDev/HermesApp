@@ -107,7 +107,7 @@ class AppManager:
     def show_view(self, view_name):
         self.log.info(f"Cambiando vista activa a: {view_name}")
         from app.gui.components.layout.sidebar import Sidebar
-        from app.gui.components.header import Header
+        from app.gui.components.layout.user_header import Header
         user = self.auth.username if self.auth else "Usuario"
 
         if view_name == "search":

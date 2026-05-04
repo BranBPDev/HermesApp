@@ -25,6 +25,7 @@
 * **Recolección:** Scraping multihilo sincronizado en tiempo real con la nube.
 * **Sincronización:** Operaciones masivas (Upsert) en base de datos PostgreSQL (Neon DB).
 * **Comparación:** Búsqueda unificada que mezcla y ordena productos de diferentes tiendas por precio.
+* **Buscador Inteligente:** Barra de búsqueda con carga asíncrona de imágenes para no bloquear la interfaz.
 * **Carrito de compra:** Gestión de listas personalizadas con cálculo de totales por usuario.
 
 ---

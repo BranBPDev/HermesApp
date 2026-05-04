@@ -24,3 +24,10 @@ Para facilitar el mantenimiento, la aplicación genera logs detallados en la car
 * **INFO:** Seguimiento del flujo (Inicios/Finales de scrapers).
 * **DEBUG:** Detalles técnicos (URLs procesadas, inyección de cookies).
 * **ERROR:** Fallos específicos de red o parseo de datos (ver Tracebacks).
+
+---
+
+## 🔄 Interfaz de Actualización
+El componente `Update` gestiona la comunicación visual durante el proceso de actualización:
+* **Barra de Progreso:** Visualización en tiempo real del estado de la descarga y sustitución de archivos.
+* **Feedback:** Mensajes dinámicos que informan al usuario sobre el paso actual del "Hot-Swap".
