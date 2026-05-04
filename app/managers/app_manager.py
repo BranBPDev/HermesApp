@@ -1,4 +1,5 @@
 from app.managers.gui_manager import GUIManager
+from app.managers.cart_manager import CartManager
 from app.utils.logger_util import HermesLogger
 from app.utils.paths_util import SESSION_JSON
 from app.utils.json_util import read_json_local
@@ -8,12 +9,11 @@ from app.utils.update_util import is_latest_version, perform_update
 class AppManager:
     def __init__(self):
         self.log = HermesLogger.get_logger("APP_MANAGER")
-        self.log.info("Inicializando AppManager...")
         self.gui = GUIManager(self)
         self.auth = None
+        self.cart_manager = CartManager()
 
     def start(self):
-        self.log.info("Iniciando flujo de la aplicación...")
         try:
             if not is_latest_version():
                 self.gui.show_update(perform_update)
@@ -22,9 +22,8 @@ class AppManager:
             else:
                 self.show_login()
         except Exception as e:
-            self.log.error(f"Error crítico en el inicio: {e}")
+            self.log.error(f"Error crítico: {e}")
             self.show_login()
-        
         self.gui.start_loop()
 
     def _try_autologin(self):
@@ -51,7 +50,9 @@ class AppManager:
         self.gui.show_view(view_name, self.auth, self._handle_add_to_cart)
 
     def _handle_add_to_cart(self, product):
-        self.log.info(f"Producto añadido al carrito: {product.get('name', 'Desconocido')}")
+        if self.auth and self.auth.user_id:
+            self.cart_manager.add_to_cart(self.auth.user_id, product['id'])
+            self.log.info(f"DB: Añadido {product['name']} al usuario {self.auth.user_id}")
 
     def logout(self):
         if SESSION_JSON.exists():

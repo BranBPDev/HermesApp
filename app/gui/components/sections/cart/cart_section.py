@@ -1,73 +1,37 @@
 import tkinter as tk
-from app.gui.styles.styles import COLOR_BG_SIDE, COLOR_PRIMARY
+from app.gui.components.sections.shared.product_list import ProductList
+from app.gui.styles.styles import COLOR_BG_DARK, FONT_TITLE
+from app.managers.cart_manager import CartManager
 
-class Sidebar(tk.Frame):
+class CartSection(tk.Frame):
     def __init__(self, master, **kwargs):
-        super().__init__(master, bg=COLOR_BG_SIDE)
-        self.canvas = tk.Canvas(self, bg=COLOR_BG_SIDE, highlightthickness=0)
-        self.canvas.pack(fill="both", expand=True)
+        super().__init__(master, bg=COLOR_BG_DARK)
+        self.cm = CartManager()
         
-        self.active_tag = "search"
-        self.active_setter = None
-        self.buttons = {} # Diccionario para guardar referencias
+        # Obtenemos el user_id del AuthManager a través del AppManager
+        self.user_id = self.master.master.app.auth.user_id
 
-        # Crear los botones una sola vez
-        self._create_buttons()
-        
-        # Solo reposicionar cuando cambie el tamaño
-        self.canvas.bind("<Configure>", lambda e: self._reposition())
+        # Título de la sección
+        self.header = tk.Label(
+            self, text="Tu Carrito", font=FONT_TITLE, 
+            bg=COLOR_BG_DARK, fg="white", pady=10
+        )
+        self.header.pack(fill="x")
 
-    def _create_buttons(self):
-        # Definición de botones: icono y tag
-        btn_defs = [("🔍", "search"), ("🛒", "cart"), ("⏻", "logout")]
-        
-        for icon, tag in btn_defs:
-            # Crear el elemento en el canvas
-            item = self.canvas.create_text(
-                0, 0, text=icon, font=("Roboto", 20), fill="white", tags=tag, anchor="center"
-            )
-            
-            def make_setter(item_id, t):
-                def set_active(active):
-                    color = COLOR_PRIMARY if active else "white"
-                    self.canvas.itemconfig(item_id, fill=color)
-                return set_active
+        # Reutilizamos ProductList para mostrar el contenido del carrito
+        # Pasamos None en on_add porque en el carrito quizás quieras 'eliminar' o nada
+        self.list_view = ProductList(
+            self, 
+            fetch_func=self._get_cart_data, 
+            on_add=None, 
+            empty_text="Tu carrito está vacío."
+        )
+        self.list_view.pack(fill="both", expand=True)
 
-            setter = make_setter(item, tag)
-            self.buttons[tag] = {"id": item, "setter": setter}
+    def _get_cart_data(self, height):
+        # Ignoramos height aquí ya que el carrito suele ser una lista corta
+        # pero mantenemos la firma para que ProductList no rompa
+        return self.cm.get_items(self.user_id)
 
-            # Eventos
-            self.canvas.tag_bind(tag, "<Enter>", lambda e, i=item: self.canvas.itemconfig(i, font=("Roboto", 26), fill=COLOR_PRIMARY))
-            self.canvas.tag_bind(tag, "<Leave>", lambda e, i=item, t=tag: self._on_leave(i, t))
-            self.canvas.tag_bind(tag, "<Button-1>", lambda e, t=tag, s=setter: self._action(t, s))
-
-        # Activar el inicial
-        self.active_setter = self.buttons[self.active_tag]["setter"]
-        self.active_setter(True)
-
-    def _on_leave(self, item_id, tag):
-        is_active = (tag == self.active_tag)
-        color = COLOR_PRIMARY if is_active else "white"
-        self.canvas.itemconfig(item_id, font=("Roboto", 20), fill=color)
-
-    def _reposition(self):
-        w = self.canvas.winfo_width()
-        h = self.canvas.winfo_height()
-        if w <= 1: return
-        
-        x_center = w / 2
-        # Reposicionar cada botón según el tag
-        self.canvas.coords(self.buttons["search"]["id"], x_center, 50)
-        self.canvas.coords(self.buttons["cart"]["id"], x_center, 110)
-        self.canvas.coords(self.buttons["logout"]["id"], x_center, h - 40)
-
-    def _action(self, tag, set_active_self):
-        app = self.master.master.app # Acceso al AppManager
-        if tag == "logout":
-            app.logout()
-        elif tag != self.active_tag:
-            if self.active_setter: self.active_setter(False)
-            set_active_self(True)
-            self.active_tag = tag
-            self.active_setter = set_active_self
-            app.show_view(tag)
+    def refresh(self):
+        self.list_view.refresh()
