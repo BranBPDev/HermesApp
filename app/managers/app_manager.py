@@ -107,14 +107,14 @@ class AppManager:
     def show_view(self, view_name):
         self.log.info(f"Cambiando vista activa a: {view_name}")
         from app.gui.components.layout.sidebar import Sidebar
-        from app.gui.components.layout.user_header import Header
+        from app.gui.components.layout.user_header import UserHeader
         user = self.auth.username if self.auth else "Usuario"
 
         if view_name == "search":
             from app.gui.components.sections.search.search_section import Search
             self.root.set_layout([
                 {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1},
-                {'class': Header, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
+                {'class': UserHeader, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
                 {'class': Search, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88, 
                  'args': {'on_add': self._handle_add_to_cart}}
             ])
@@ -123,7 +123,7 @@ class AppManager:
             from app.gui.components.sections.cart.cart_section import Cart
             self.root.set_layout([
                 {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1},
-                {'class': Header, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
+                {'class': UserHeader, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
                 {'class': Cart, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88}
             ])
             self.log.info("Vista 'cart' renderizada.")
