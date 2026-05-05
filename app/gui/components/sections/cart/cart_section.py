@@ -37,6 +37,8 @@ class CartSection(tk.Frame):
         return self.cm.get_items(self.user_id)
 
     def refresh(self):
-        # Aseguramos que el ID esté actualizado antes de pedir datos
         self.user_id = self.auth.current_user_id
+        self.cm.log.info(f"Refrescando CartSection para el usuario: {self.user_id}")
+        if not self.user_id:
+            self.cm.log.error("CartSection intentó refrescar pero current_user_id es None")
         self.list_view.refresh()
