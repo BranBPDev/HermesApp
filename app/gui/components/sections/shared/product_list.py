@@ -12,13 +12,14 @@ from app.config.scrapers_config import EROSKI_HEADERS
 import logging
 
 class ProductList(tk.Frame):
-    def __init__(self, master, get_items_func, on_action=None, empty_text="No hay productos", show_action_btn=True, **kwargs):
+    def __init__(self, master, get_items_func, on_action=None, empty_text="No hay productos", show_action_btn=True, pm_ref=None, **kwargs):
         super().__init__(master, bg=COLOR_BG_DARK)
         self.log = logging.getLogger("PRODUCT_LIST")
         self.get_items_func = get_items_func
         self.on_action = on_action
         self.empty_text = empty_text
         self.show_action_btn = show_action_btn
+        self.pm = pm_ref  # Referencia al ProductManager para paginación
         self.img_cache = {}
         
         self.canvas = tk.Canvas(self, bg=COLOR_BG_DARK, highlightthickness=0)
@@ -40,14 +41,16 @@ class ProductList(tk.Frame):
             return
 
         self._draw_table(products, w, h)
+        if self.pm:
+            self._draw_pagination(w, h)
 
     def _draw_table(self, products, w, h):
         header_y, start_y, row_h = 20, 60, 65
-        # Si no hay botón, el margen derecho es menor
         margin_right = 50 if self.show_action_btn else 25
         
-        col_img, col_prod, col_super, col_price = 60, w*0.22, w*0.42, w*0.55
-        col_unit, col_punit, col_acc = w*0.68, w*0.82, w - margin_right
+        # AJUSTE: col_prod movido a la derecha para no solapar con la imagen
+        col_img, col_prod, col_super, col_price = 60, w*0.28, w*0.48, w*0.60
+        col_unit, col_punit, col_acc = w*0.72, w*0.84, w - margin_right
 
         headers = [(col_prod, "PRODUCTO"), (col_super, "SUPER"), (col_price, "PRECIO"), 
                    (col_unit, "UNIDAD"), (col_punit, "P. UNIT")]
@@ -62,9 +65,8 @@ class ProductList(tk.Frame):
             bg_color = "#1a1a1a" if i % 2 == 0 else COLOR_BG_DARK
             ShapeDrawer.rounded_rect(self.canvas, 25, y-25, w-50, row_h-10, 8, fill=bg_color)
             
-            # Usamos .get() para evitar KeyErrors entre búsqueda (dict) y carrito (filas DB)
             img_url = p.get('image_url') or p.get('img_url')
-            self._draw_product_img(img_url, col_img - 20, y-20)
+            self._draw_product_img(img_url, 40, y-20) # X fija para imagen
 
             full_name = p.get('name', 'Producto sin nombre')
             name = (full_name[:25] + "..") if len(full_name) > 25 else full_name
@@ -75,12 +77,44 @@ class ProductList(tk.Frame):
             self.canvas.create_text(col_unit, y, text=p.get('unit_type', 'ud'), fill=COLOR_TEXT_INACTIVE, font=FONT_LABEL, anchor="center")
             self.canvas.create_text(col_punit, y, text=f"{p.get('price_norm', 0)}€", fill=COLOR_TEXT_INACTIVE, font=FONT_LABEL, anchor="center")
 
-            # Solo dibujamos el botón si show_action_btn es True y hay una función on_action
             if self.show_action_btn and self.on_action:
                 btn_tag = f"btn_{i}"
                 ShapeDrawer.rounded_rect(self.canvas, col_acc-15, y-15, 30, 30, 5, fill=COLOR_PRIMARY, tags=btn_tag)
                 self.canvas.create_text(col_acc, y, text="+", fill="white", font=FONT_INPUT, tags=btn_tag, anchor="center")
                 self.canvas.tag_bind(btn_tag, "<ButtonRelease-1>", lambda e, prod=p: self.on_action(prod))
+
+    def _draw_pagination(self, w, h):
+        curr = self.pm.current_page + 1
+        has_prev = self.pm.current_page > 0
+        has_next = self.pm.has_more()
+        
+        y_pos = h - 30
+        x_center = w / 2
+        
+        # Color según estado
+        c_prev = COLOR_PRIMARY if has_prev else COLOR_TEXT_INACTIVE
+        c_next = COLOR_PRIMARY if has_next else COLOR_TEXT_INACTIVE
+
+        # Botón Izquierdo
+        prev_id = self.canvas.create_text(x_center - 40, y_pos, text="<", fill=c_prev, font=FONT_INPUT, anchor="center")
+        if has_prev:
+            self.canvas.tag_bind(prev_id, "<Button-1>", lambda e: self._change_page(-1))
+            self.canvas.tag_bind(prev_id, "<Enter>", lambda e: self.canvas.config(cursor="hand2"))
+            self.canvas.tag_bind(prev_id, "<Leave>", lambda e: self.canvas.config(cursor=""))
+
+        # Número página
+        self.canvas.create_text(x_center, y_pos, text=str(curr), fill="white", font=FONT_INPUT, anchor="center")
+
+        # Botón Derecho
+        next_id = self.canvas.create_text(x_center + 40, y_pos, text=">", fill=c_next, font=FONT_INPUT, anchor="center")
+        if has_next:
+            self.canvas.tag_bind(next_id, "<Button-1>", lambda e: self._change_page(1))
+            self.canvas.tag_bind(next_id, "<Enter>", lambda e: self.canvas.config(cursor="hand2"))
+            self.canvas.tag_bind(next_id, "<Leave>", lambda e: self.canvas.config(cursor=""))
+
+    def _change_page(self, delta):
+        self.pm.current_page += delta
+        self.refresh()
 
     def _draw_product_img(self, url, x, y):
         if not url or url in self.img_cache:
