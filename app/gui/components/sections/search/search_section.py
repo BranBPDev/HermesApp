@@ -13,13 +13,13 @@ class SearchSection(tk.Frame):
 
         # 1. Barra de búsqueda arriba
         self.search_bar = SearchBar(self, on_search=self.run_search)
-        self.search_bar.pack(fill="x", padx=10, pady=(0, 5))
+        self.search_bar.pack(fill="x", padx=10, pady=(10, 5))
         
         # 2. Toast al fondo (fijo)
         self.toast = FeedbackToast(self)
         self.toast.pack(fill="x", side="bottom")
 
-        # 3. Lista de productos llena el resto (el espacio entre search y paginacion interna)
+        # 3. Lista de productos llena el resto (el espacio central)
         self.list_view = ProductList(
             self, 
             get_items_func=self._get_data, 
@@ -28,7 +28,7 @@ class SearchSection(tk.Frame):
             pm_ref=self.pm,
             empty_text="Busca algo para empezar..."
         )
-        self.list_view.pack(fill="both", expand=True)
+        self.list_view.pack(fill="both", expand=True, padx=10)
 
     def _get_data(self, height):
         # El alto ahora es el disponible real. 

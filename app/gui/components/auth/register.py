@@ -1,6 +1,5 @@
 import tkinter as tk
 from app.gui.components.shared.visual_elements import CButton, CInput, CBadge
-from PIL import Image, ImageTk
 from app.gui.styles.styles import (
     COLOR_BG_SIDE, COLOR_PRIMARY, COLOR_TEXT_MAIN, COLOR_TEXT_DIM, 
     COLOR_ERROR, FONT_TITLE, FONT_CB, FONT_ERROR, INPUT_W, Y_OFF
@@ -9,7 +8,8 @@ from app.gui.styles.styles import (
 class Register(tk.Frame):
     def __init__(self, master, auth_manager, on_register_success, logo, **kwargs):
         super().__init__(master, bg=COLOR_BG_SIDE)
-        self.logo = ImageTk.PhotoImage(Image.open(str(logo)).resize((100, 100), Image.Resampling.LANCZOS))
+        # EL LOGO YA VIENE CARGADO DESDE MAINWINDOW
+        self.logo = logo
         self.auth = auth_manager
         self.on_success = on_register_success
         self.pass_visible = False
@@ -35,11 +35,13 @@ class Register(tk.Frame):
         half_w = (INPUT_W / 2) - 5
 
         self.canvas.create_line(w, 40, w, h-40, fill=COLOR_PRIMARY, dash=(2, 20), width=4)
-        self.canvas.create_image(w, h * 0.15, image=self.logo, anchor="center")
+        
+        if self.logo:
+            self.canvas.create_image(cx, h * 0.15, image=self.logo, anchor="center")
+            
         self.canvas.create_text(cx, cy + Y_OFF["TITLE"], text="Registro de Usuario", 
                                fill=COLOR_TEXT_MAIN, font=FONT_TITLE, anchor="center")
         
-        # Badge de auto-login
         if self.remember_me.get():
             self.badge_auto.draw(sx, cy + Y_OFF["BADGES"])
 
@@ -47,7 +49,6 @@ class Register(tk.Frame):
         self.input_email.draw(sx + half_w + 10, cy + Y_OFF["USER"], w=half_w)
         self.input_pass.draw(sx, cy + Y_OFF["PASS"], self.pass_visible)
 
-        # Checkbox "Recordar"
         cb_y = cy + Y_OFF["CB"]
         cb_tag = "checkbox_reg"
         self.canvas.create_rectangle(sx, cb_y, sx + INPUT_W, cb_y + 16, fill=COLOR_BG_SIDE, outline=COLOR_BG_SIDE, tags=cb_tag)
@@ -64,26 +65,13 @@ class Register(tk.Frame):
             self.canvas.create_text(cx, cy + Y_OFF["ERROR"], text=self.error_message,
                                     fill=COLOR_ERROR, font=FONT_ERROR, anchor="center")
 
-    def _toggle_rem(self):
-        self.remember_me.set(not self.remember_me.get())
-        self._render()
-
-    def _toggle_pass(self):
-        self.pass_visible = not self.pass_visible
-        self._render()
+    def _toggle_rem(self): self.remember_me.set(not self.remember_me.get()); self._render()
+    def _toggle_pass(self): self.pass_visible = not self.pass_visible; self._render()
 
     def _handle_register(self):
         u, e, p = self.input_user.get(), self.input_email.get(), self.input_pass.get()
         if not u or not e or not p:
-            self.error_message = "Todos los campos son obligatorios"
-            self._render()
-            return
-
-        # Recibimos éxito y mensaje
+            self.error_message = "Todos los campos son obligatorios"; self._render(); return
         success, message = self.auth.register(u, e, p, remember=self.remember_me.get()) 
-        if success:
-            # Aquí decides si guardas sesión antes de pasar al main
-            self.on_success()
-        else:
-            self.error_message = message
-            self._render()
+        if success: self.on_success()
+        else: self.error_message = message; self._render()
