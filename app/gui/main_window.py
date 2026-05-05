@@ -15,54 +15,55 @@ class MainWindow(tk.Tk):
         self.configure(bg=COLOR_BG_DARK)
         self.active_instances = []
 
-        # --- CARGA OPTIMIZADA DEL LOGO PNG (UNA SOLA VEZ) ---
-        self.logo_png_shared = None
+        # --- CARGA ÚNICA Y OPTIMIZADA DEL LOGO PNG ---
+        self.shared_logo_img = None
         if LOGO_PNG.exists():
             try:
                 img = Image.open(str(LOGO_PNG)).resize((100, 100), Image.Resampling.LANCZOS)
-                self.logo_png_shared = ImageTk.PhotoImage(img)
-                log.info("ÉXITO: Logo PNG cargado en memoria para compartir.")
+                self.shared_logo_img = ImageTk.PhotoImage(img)
+                log.info("Logo PNG cargado en memoria correctamente.")
             except Exception as e:
-                log.error(f"Error cargando logo PNG compartido: {e}")
+                log.error(f"Error cargando PNG: {e}")
 
-        # --- GESTIÓN DEL ICONO (.ICO) PARA BARRA DE TAREAS Y VENTANA ---
+        # --- ICONO DEL SISTEMA (.ICO) ---
         if LOGO_ICO.exists():
-            icon_path = str(LOGO_ICO.absolute())
             try:
-                # MÉTODO 1: Forzar PhotoImage para el icono de ventana
-                img_ico = Image.open(LOGO_ICO)
-                self._icon_photo = ImageTk.PhotoImage(img_ico)
-                self.iconphoto(True, self._icon_photo)
-                log.info("ÉXITO: self.iconphoto() con .ico aplicado.")
-            except Exception as e:
-                log.error(f"FALLO en iconphoto: {e}. Probando iconbitmap...")
-                try:
-                    self.iconbitmap(icon_path)
-                except Exception as ex:
-                    log.error(f"FALLO CRÍTICO en iconbitmap: {ex}")
+                self.icon_temp = ImageTk.PhotoImage(Image.open(LOGO_ICO))
+                self.iconphoto(True, self.icon_temp)
+            except:
+                try: self.iconbitmap(str(LOGO_ICO))
+                except: pass
 
     def reset_layout(self):
-        log.debug(f"Reset de layout. Destruyendo {len(self.active_instances)} instancias...")
+        log.debug("Reset de layout...")
         self.unbind("<Return>")
         for widget in self.winfo_children():
             widget.destroy()
         self.active_instances = []
 
     def set_layout(self, components_config):
-        log.info(f"Aplicando nuevo layout...")
         self.reset_layout()
-        for i, conf in enumerate(components_config):
-            container = tk.Frame(self, bg=COLOR_BG_DARK)
+        
+        # Contenedor para los componentes
+        main_container = tk.Frame(self, bg=COLOR_BG_DARK)
+        main_container.pack(fill="both", expand=True)
+
+        for conf in components_config:
+            container = tk.Frame(main_container, bg=COLOR_BG_DARK)
             container.place(
                 relx=conf.get('relx', 0), rely=conf.get('rely', 0),
                 relwidth=conf.get('relw', 1), relheight=conf.get('relh', 1)
             )
-            # Inyectamos el logo ya cargado en los argumentos si el componente lo necesita
-            args = conf.get('args', {})
-            if 'logo' in args:
-                args['logo'] = self.logo_png_shared
-
-            instance = conf['class'](container, **args)
+            # Pasamos None al logo de los componentes porque ahora lo gestiona MainWindow
+            instance = conf['class'](container, **conf.get('args', {}))
             instance.pack(fill="both", expand=True)
             self.active_instances.append(instance)
+
+        # --- LOGO ÚNICO CENTRADO (FLOTANTE) ---
+        # Solo lo mostramos si hay más de un componente (Login/Register)
+        if len(components_config) > 1 and self.shared_logo_img:
+            logo_label = tk.Label(self, image=self.shared_logo_img, bg=COLOR_BG_DARK, bd=0, highlightthickness=0)
+            logo_label.place(relx=0.5, rely=0.15, anchor="center")
+
+        log.info("Layout aplicado con logo centralizado.")
         return self.active_instances

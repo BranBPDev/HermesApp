@@ -28,9 +28,9 @@ class GUIManager:
         from app.gui.components.auth.login import Login
         self.root.set_layout([
             {'class': Register, 'relx': 0, 'rely': 0, 'relw': 0.5, 'relh': 1,
-             'args': {'auth_manager': auth_manager, 'on_register_success': on_login_success, 'logo': LOGO_PNG}},
+             'args': {'auth_manager': auth_manager, 'on_register_success': on_login_success}},
             {'class': Login, 'relx': 0.5, 'rely': 0, 'relw': 0.5, 'relh': 1,
-             'args': {'auth_manager': auth_manager, 'on_success': on_login_success, 'logo': LOGO_PNG}}
+             'args': {'auth_manager': auth_manager, 'on_success': on_login_success}}
         ])
 
     def show_view(self, view_name, auth_manager, on_add_func):
