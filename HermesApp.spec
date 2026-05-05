@@ -14,7 +14,7 @@ a = Analysis(
     datas=[
         (certifi.where(), 'certifi'), 
         ('.env', '.'), 
-        ('app/assets/logo.ico', 'app/assets'),
+        ('app/assets', 'app/assets'),
     ],
     hiddenimports=[
         'customtkinter',
@@ -52,5 +52,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['app/assets/logo.ico'],
+    icon='app/assets/logo.ico',
 )
