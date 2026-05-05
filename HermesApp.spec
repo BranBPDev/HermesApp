@@ -14,6 +14,7 @@ a = Analysis(
     datas=[
         (certifi.where(), 'certifi'), 
         ('.env', '.'), 
+        ('app/assets/logo.ico', 'app/assets'),
     ],
     hiddenimports=[
         'customtkinter',

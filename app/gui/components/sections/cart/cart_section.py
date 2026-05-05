@@ -2,15 +2,15 @@ import tkinter as tk
 from app.gui.components.sections.shared.product_list import ProductList
 from app.gui.styles.styles import COLOR_BG_DARK, FONT_TITLE
 from app.managers.cart_manager import CartManager
+from app.managers.auth_manager import AuthManager # Importamos el manager
 
 class CartSection(tk.Frame):
     def __init__(self, master, **kwargs):
         super().__init__(master, bg=COLOR_BG_DARK)
         self.cm = CartManager()
+        self.auth = AuthManager() # Acceso al Singleton
         
-        # Obtenemos el user_id de forma segura
-        app_manager = self.master.master.app
-        self.user_id = app_manager.auth.current_user_id
+        self.user_id = self.auth.current_user_id
 
         # Título
         self.header = tk.Label(
@@ -19,7 +19,7 @@ class CartSection(tk.Frame):
         )
         self.header.pack(fill="x")
 
-        # El componente de lista debe expandirse para ser visible
+        # Lista de productos
         self.list_view = ProductList(
             self, 
             fetch_func=self._get_cart_data, 
@@ -27,10 +27,16 @@ class CartSection(tk.Frame):
             empty_text="Tu carrito está vacío."
         )
         self.list_view.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        # FORZAR REFRESCO INICIAL
+        self.refresh()
 
     def _get_cart_data(self, height):
-        # El manager ya loguea esta acción
+        if not self.user_id:
+            return []
         return self.cm.get_items(self.user_id)
 
     def refresh(self):
+        # Aseguramos que el ID esté actualizado antes de pedir datos
+        self.user_id = self.auth.current_user_id
         self.list_view.refresh()
