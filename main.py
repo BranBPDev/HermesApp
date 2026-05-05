@@ -3,7 +3,7 @@ import ctypes
 from app.managers.app_manager import AppManager
 
 def main():
-    if sys.platform == "win32":
+    if sys.platform == "win32": 
         try:
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('Hermes.App.v004')
         except Exception:
