@@ -11,20 +11,25 @@ class SearchSection(tk.Frame):
         self.pm = ProductManager()
         self.on_add = on_add
 
-        # 1. Barra de búsqueda (Componente extraído)
+        # Barra de búsqueda
         self.search_bar = SearchBar(self, on_search=self.run_search)
         self.search_bar.pack(fill="x", padx=10, pady=5)
         
-        # 2. Lista de productos (Reutilizable)
-        self.list_view = ProductList(self, self._get_data, self._handle_add, "Busca algo para empezar...")
+        # Lista de productos: show_action_btn=True para permitir añadir
+        self.list_view = ProductList(
+            self, 
+            get_items_func=self._get_data, 
+            on_action=self._handle_add, 
+            show_action_btn=True,
+            empty_text="Busca algo para empezar..."
+        )
         self.list_view.pack(fill="both", expand=True)
 
-        # 3. Toast para notificaciones (Componente extraído)
         self.toast = FeedbackToast(self)
         self.toast.pack(fill="x", side="bottom")
 
     def _get_data(self, height):
-        # El alto ahora se calcula sobre la lista, no sobre toda la sección
+        # Cálculo dinámico de items por página según el alto disponible
         self.pm.page_size = max(1, int(height // 65))
         return self.pm.get_current_page_items()
 
@@ -33,6 +38,6 @@ class SearchSection(tk.Frame):
         self.list_view.refresh()
 
     def _handle_add(self, prod):
-        self.on_add(prod)
-        # Usamos el método show del componente Toast
-        self.toast.show(f"✓ Añadido: {prod['name'][:25]}...")
+        if self.on_add:
+            self.on_add(prod)
+            self.toast.show(f"✓ Añadido: {prod.get('name', 'Producto')[:25]}...")
