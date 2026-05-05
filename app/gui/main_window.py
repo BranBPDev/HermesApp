@@ -1,6 +1,6 @@
 import tkinter as tk
 from app.gui.styles.styles import COLOR_BG_DARK
-from app.utils.paths_util import LOGO_ICO  # Asegúrate de importar la ruta
+from app.utils.paths_util import LOGO_ICO
 from app.utils.logger_util import HermesLogger
 
 log = HermesLogger.get_logger("MAIN_WINDOW")
@@ -15,19 +15,27 @@ class MainWindow(tk.Tk):
 
         # FORZAR ICONO EN BARRA DE TAREAS
         if LOGO_ICO.exists():
+            icon_path = str(LOGO_ICO.absolute())
+            log.info(f"Aplicando icono desde ruta absoluta: {icon_path}")
             try:
-                from PIL import Image, ImageTk
-                # Método 1: El estándar de Tkinter
-                self.iconbitmap(default=str(LOGO_ICO.absolute())) 
-                
-                # Método 2: Forzar icono de barra de tareas mediante PhotoImage (más robusto)
-                img = Image.open(LOGO_ICO)
-                self._icon_photo = ImageTk.PhotoImage(img) # Guardamos referencia fuerte
-                self.wm_iconphoto(True, self._icon_photo)
-                
-                log.info("Icono aplicado mediante iconbitmap y wm_iconphoto")
+                # Método 1: Estándar clásico
+                self.iconbitmap(icon_path)
+                log.info("self.iconbitmap() ejecutado con éxito.")
+            except tk.TclError as e:
+                log.error(f"Error de formato iconbitmap: {e}. Probando iconphoto...")
+                try:
+                    # Método 2: Alternativa con PIL (evitando wm_iconphoto que da problemas en Win11)
+                    from PIL import Image, ImageTk
+                    img = Image.open(LOGO_ICO)
+                    self._icon_photo = ImageTk.PhotoImage(img)
+                    self.iconphoto(True, self._icon_photo)
+                    log.info("self.iconphoto() ejecutado con éxito.")
+                except Exception as ex:
+                    log.error(f"Error en método iconphoto: {ex}")
             except Exception as e:
-                log.error(f"Error real al aplicar icono: {e}")
+                log.error(f"Error general al aplicar icono: {e}")
+        else:
+            log.error(f"LOGO_ICO NO EXISTE EN LA RUTA: {LOGO_ICO}")
 
     def reset_layout(self):
         self.unbind("<Return>")
