@@ -16,15 +16,18 @@ class MainWindow(tk.Tk):
         # FORZAR ICONO EN BARRA DE TAREAS
         if LOGO_ICO.exists():
             try:
-                icon_path = str(LOGO_ICO.absolute()) # Usamos ruta absoluta
-                log.info(f"Intentando cargar iconbitmap desde: {icon_path}")
-                self.iconbitmap(icon_path)
-                self.wm_iconbitmap(icon_path)
-                log.info("Icono aplicado correctamente a MainWindow")
+                from PIL import Image, ImageTk
+                # Método 1: El estándar de Tkinter
+                self.iconbitmap(default=str(LOGO_ICO.absolute())) 
+                
+                # Método 2: Forzar icono de barra de tareas mediante PhotoImage (más robusto)
+                img = Image.open(LOGO_ICO)
+                self._icon_photo = ImageTk.PhotoImage(img) # Guardamos referencia fuerte
+                self.wm_iconphoto(True, self._icon_photo)
+                
+                log.info("Icono aplicado mediante iconbitmap y wm_iconphoto")
             except Exception as e:
-                log.error(f"Error al aplicar icono en Tkinter: {e}")
-        else:
-            log.warning(f"LOGO_ICO no encontrado en la ruta esperada: {LOGO_ICO}")
+                log.error(f"Error real al aplicar icono: {e}")
 
     def reset_layout(self):
         self.unbind("<Return>")

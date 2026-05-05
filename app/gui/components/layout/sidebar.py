@@ -15,31 +15,34 @@ class Sidebar(tk.Frame):
         self.canvas.bind("<Configure>", lambda e: self._reposition())
 
     def _create_buttons(self):
-        btn_defs = [("🔍", "search"), ("🛒", "cart"), ("⏻", "logout")]
+        import logging
+        self.log = logging.getLogger("SIDEBAR")
+        btn_defs = [("🔍", "search", 50), ("🛒", "cart", 110), ("⏻", "logout", -40)]
         
-        for icon, tag in btn_defs:
-            item = self.canvas.create_text(
-                0, 0, text=icon, font=("Roboto", 20), fill="white", tags=tag, anchor="center"
+        for icon, tag, y_pos in btn_defs:
+            # 1. Crear un rectángulo invisible que cubra todo el ancho del sidebar
+            # Esto asegura que el click funcione en toda la zona, no solo sobre la letra
+            rect = self.canvas.create_rectangle(
+                0, 0, 0, 0, fill="", outline="", tags=(tag, f"{tag}_bg")
             )
             
-            def make_setter(item_id, t):
+            item = self.canvas.create_text(
+                0, 0, text=icon, font=("Roboto", 20), fill="white", tags=(tag, f"{tag}_txt"), anchor="center"
+            )
+            
+            def make_setter(i, t):
                 def set_active(active):
                     color = COLOR_PRIMARY if active else "white"
-                    self.canvas.itemconfig(item_id, fill=color)
+                    self.canvas.itemconfig(i, fill=color)
                 return set_active
 
             setter = make_setter(item, tag)
-            self.buttons[tag] = {"id": item, "setter": setter}
+            self.buttons[tag] = {"id": item, "rect": rect, "y": y_pos, "setter": setter}
 
-            # Eventos con clausuras correctas
+            # Bindeamos los eventos al TAG (que ahora incluye al rectángulo y al texto)
             self.canvas.tag_bind(tag, "<Enter>", lambda e, i=item: self.canvas.itemconfig(i, font=("Roboto", 26), fill=COLOR_PRIMARY))
             self.canvas.tag_bind(tag, "<Leave>", lambda e, i=item, t=tag: self._on_leave(i, t))
             self.canvas.tag_bind(tag, "<Button-1>", lambda e, t=tag, s=setter: self._action(t, s))
-
-        # Activar visualmente el botón de la vista actual
-        if self.active_tag in self.buttons:
-            self.active_setter = self.buttons[self.active_tag]["setter"]
-            self.active_setter(True)
 
     def _on_leave(self, item_id, tag):
         is_active = (tag == self.active_tag)
@@ -50,19 +53,22 @@ class Sidebar(tk.Frame):
         w = self.canvas.winfo_width()
         h = self.canvas.winfo_height()
         if w <= 1: return
-        
         x_center = w / 2
-        self.canvas.coords(self.buttons["search"]["id"], x_center, 50)
-        self.canvas.coords(self.buttons["cart"]["id"], x_center, 110)
-        self.canvas.coords(self.buttons["logout"]["id"], x_center, h - 40)
+        
+        for tag, btn in self.buttons.items():
+            y = btn["y"] if btn["y"] > 0 else h + btn["y"]
+            # Centrar texto
+            self.canvas.coords(btn["id"], x_center, y)
+            # Ajustar rectángulo de colisión (toda la franja del botón)
+            self.canvas.coords(btn["rect"], 0, y-25, w, y+25)
 
     def _action(self, tag, set_active_self):
-        # Acceso al AppManager: container (master) -> MainWindow (master) -> app
+        self.log.info(f"CLICK DETECTADO en Sidebar: {tag}") # <--- LOG CRÍTICO
         app = self.master.master.app 
         if tag == "logout":
             app.logout()
         elif tag != self.active_tag:
-            # Actualizamos estado interno antes de pedir el cambio de vista
+            self.log.debug(f"Cambiando vista de {self.active_tag} a {tag}")
             if self.active_setter: self.active_setter(False)
             set_active_self(True)
             self.active_tag = tag
