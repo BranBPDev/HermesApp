@@ -1,6 +1,9 @@
 import tkinter as tk
 from app.gui.styles.styles import COLOR_BG_DARK
 from app.utils.paths_util import LOGO_ICO  # Asegúrate de importar la ruta
+from app.utils.logger_util import HermesLogger
+
+log = HermesLogger.get_logger("MAIN_WINDOW")
 
 class MainWindow(tk.Tk):
     def __init__(self, app_manager):
@@ -13,11 +16,15 @@ class MainWindow(tk.Tk):
         # FORZAR ICONO EN BARRA DE TAREAS
         if LOGO_ICO.exists():
             try:
-                icon_path = str(LOGO_ICO)
-                self.iconbitmap(icon_path)    # Icono de la ventana
-                self.wm_iconbitmap(icon_path) # Refuerzo para el gestor de ventanas de Windows
-            except Exception:
-                pass
+                icon_path = str(LOGO_ICO.absolute()) # Usamos ruta absoluta
+                log.info(f"Intentando cargar iconbitmap desde: {icon_path}")
+                self.iconbitmap(icon_path)
+                self.wm_iconbitmap(icon_path)
+                log.info("Icono aplicado correctamente a MainWindow")
+            except Exception as e:
+                log.error(f"Error al aplicar icono en Tkinter: {e}")
+        else:
+            log.warning(f"LOGO_ICO no encontrado en la ruta esperada: {LOGO_ICO}")
 
     def reset_layout(self):
         self.unbind("<Return>")

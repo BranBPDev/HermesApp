@@ -16,9 +16,18 @@ class CartManager:
         return res
 
     def get_items(self, user_id):
-        self.log.debug(f"Consultando carrito para UserID: {user_id}")
+        self.log.debug(f"TRAZA: get_items solicitado para user_id: {user_id} (Tipo: {type(user_id)})")
+        if user_id is None:
+            self.log.error("TRAZA: user_id es NONE. La consulta al carrito fallará inevitablemente.")
+            return []
+        
         items = self.dao.get_user_cart(user_id)
-        self.log.info(f"Items recuperados: {len(items) if items else 0}")
+        
+        if not items:
+            self.log.info(f"TRAZA: El DAO retornó una lista VACÍA para el usuario {user_id}")
+        else:
+            self.log.info(f"TRAZA: Se recuperaron {len(items)} items del carrito.")
+            self.log.debug(f"TRAZA: Primer item recuperado (si existe): {items[0] if items else 'N/A'}")
         return items
 
     def get_suggestions(self, user_id):

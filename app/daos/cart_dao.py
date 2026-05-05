@@ -20,12 +20,23 @@ class CartDAO:
             return False
 
     def get_user_cart(self, user_id):
-        sql = "..." # (Tu SQL actual)
+        sql = """
+            SELECT p.id as product_id, p.name, p.price, p.price_norm, 
+                   c.quantity, (p.price * c.quantity) as subtotal, s.name as store_name
+            FROM cart_item c
+            JOIN product p ON c.product_id = p.id
+            JOIN store s ON p.store_id = s.id
+            WHERE c.user_id = %s
+            ORDER BY p.name ASC
+        """
         try:
-            return self.db.execute_query(sql, (user_id,), fetch=True)
-        except Exception as e:
             import logging
-            logging.getLogger("CART_MANAGER").error(f"Error SQL en get_user_cart: {e}")
+            l = logging.getLogger("CART_MANAGER")
+            l.debug(f"Ejecutando SQL de carrito para ID: {user_id}")
+            res = self.db.execute_query(sql, (user_id,), fetch=True)
+            return res if res else []
+        except Exception as e:
+            logging.getLogger("CART_MANAGER").error(f"ERROR SQL ejecutando get_user_cart: {e}")
             return []
 
     def get_savings_suggestions(self, user_id):

@@ -30,11 +30,13 @@ class AuthManager:
         if not identifier.strip() or not password.strip():
             return False, "Por favor, rellena todos los campos."
 
+        self.log.info(f"Intento de login para usuario: {identifier}")
         try:
             user_id, real_username = self.user_dao.validate_user(identifier, password)
             if user_id:
                 self.current_user_id = user_id
                 self.username = real_username
+                self.log.info(f"LOGIN EXITOSO: ID={self.current_user_id} | User={self.username}")
                 if remember:
                     self._save_session(identifier, password)
                 return True, "Success"
