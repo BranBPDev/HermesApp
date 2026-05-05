@@ -11,11 +11,15 @@ class SearchSection(tk.Frame):
         self.pm = ProductManager()
         self.on_add = on_add
 
-        # Barra de búsqueda
+        # 1. Barra de búsqueda arriba
         self.search_bar = SearchBar(self, on_search=self.run_search)
-        self.search_bar.pack(fill="x", padx=10, pady=5)
+        self.search_bar.pack(fill="x", padx=10, pady=(0, 5))
         
-        # Lista de productos: añadimos pm_ref para habilitar controles de paginación
+        # 2. Toast al fondo (fijo)
+        self.toast = FeedbackToast(self)
+        self.toast.pack(fill="x", side="bottom")
+
+        # 3. Lista de productos llena el resto (el espacio entre search y paginacion interna)
         self.list_view = ProductList(
             self, 
             get_items_func=self._get_data, 
@@ -26,13 +30,10 @@ class SearchSection(tk.Frame):
         )
         self.list_view.pack(fill="both", expand=True)
 
-        self.toast = FeedbackToast(self)
-        self.toast.pack(fill="x", side="bottom")
-
     def _get_data(self, height):
-        # Cálculo dinámico de items por página según el alto disponible
-        # Restamos un poco de espacio para los controles de paginación del fondo
-        self.pm.page_size = max(1, int((height - 40) // 65))
+        # El alto ahora es el disponible real. 
+        # Restamos 60px para el área de paginación visualmente atractiva al fondo
+        self.pm.page_size = max(1, int((height - 60) // 65))
         return self.pm.get_current_page_items()
 
     def run_search(self, query):
