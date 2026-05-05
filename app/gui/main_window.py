@@ -1,5 +1,6 @@
 import tkinter as tk
 from app.gui.styles.styles import COLOR_BG_DARK
+from app.utils.paths_util import LOGO_ICO  # Asegúrate de importar la ruta
 
 class MainWindow(tk.Tk):
     def __init__(self, app_manager):
@@ -8,6 +9,15 @@ class MainWindow(tk.Tk):
         self.title("HermesApp")
         self.configure(bg=COLOR_BG_DARK)
         self.active_instances = []
+
+        # FORZAR ICONO EN BARRA DE TAREAS
+        if LOGO_ICO.exists():
+            try:
+                icon_path = str(LOGO_ICO)
+                self.iconbitmap(icon_path)    # Icono de la ventana
+                self.wm_iconbitmap(icon_path) # Refuerzo para el gestor de ventanas de Windows
+            except Exception:
+                pass
 
     def reset_layout(self):
         self.unbind("<Return>")

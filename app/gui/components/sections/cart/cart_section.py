@@ -8,29 +8,28 @@ class CartSection(tk.Frame):
         super().__init__(master, bg=COLOR_BG_DARK)
         self.cm = CartManager()
         
-        # Obtenemos el user_id del AuthManager a través del AppManager
-        self.user_id = self.master.master.app.auth.user_id
+        # Obtenemos el user_id de forma segura
+        app_manager = self.master.master.app
+        self.user_id = app_manager.auth.current_user_id
 
-        # Título de la sección
+        # Título
         self.header = tk.Label(
             self, text="Tu Carrito", font=FONT_TITLE, 
             bg=COLOR_BG_DARK, fg="white", pady=10
         )
         self.header.pack(fill="x")
 
-        # Reutilizamos ProductList para mostrar el contenido del carrito
-        # Pasamos None en on_add porque en el carrito quizás quieras 'eliminar' o nada
+        # El componente de lista debe expandirse para ser visible
         self.list_view = ProductList(
             self, 
             fetch_func=self._get_cart_data, 
             on_add=None, 
             empty_text="Tu carrito está vacío."
         )
-        self.list_view.pack(fill="both", expand=True)
+        self.list_view.pack(fill="both", expand=True, padx=20, pady=10)
 
     def _get_cart_data(self, height):
-        # Ignoramos height aquí ya que el carrito suele ser una lista corta
-        # pero mantenemos la firma para que ProductList no rompa
+        # El manager ya loguea esta acción
         return self.cm.get_items(self.user_id)
 
     def refresh(self):

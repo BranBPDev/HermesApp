@@ -1,9 +1,14 @@
+import sys
+import ctypes
 from app.managers.app_manager import AppManager
 
 def main():
-    # La instancia se encarga de todo el ciclo de vida
-    app = AppManager()
-    app.start()
+    if sys.platform == "win32":
+        try:
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('HermesApp')
+        except Exception:
+            pass
+    AppManager().start()
 
 if __name__ == "__main__":
     main()
