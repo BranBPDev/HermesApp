@@ -19,8 +19,7 @@ class MainWindow(tk.Tk):
         self.shared_logo_img = None
         if LOGO_PNG.exists():
             try:
-                img = Image.open(str(LOGO_PNG)).resize((100, 100), Image.Resampling.LANCZOS)
-                self.shared_logo_img = ImageTk.PhotoImage(img)
+                self.shared_logo_img = ImageTk.PhotoImage(Image.open(str(LOGO_PNG)).resize((100, 100), Image.Resampling.LANCZOS))
                 log.info("Logo PNG cargado en memoria correctamente.")
             except Exception as e:
                 log.error(f"Error cargando PNG: {e}")
@@ -62,7 +61,7 @@ class MainWindow(tk.Tk):
         # --- LOGO ÚNICO CENTRADO (FLOTANTE) ---
         # Solo lo mostramos si hay más de un componente (Login/Register)
         if len(components_config) > 1 and self.shared_logo_img:
-            logo_label = tk.Label(self, image=self.shared_logo_img, bg=COLOR_BG_DARK, bd=0, highlightthickness=0)
+            logo_label = tk.Label(self, image=self.shared_logo_img, bd=0, highlightthickness=0)
             logo_label.place(relx=0.5, rely=0.15, anchor="center")
 
         log.info("Layout aplicado con logo centralizado.")
