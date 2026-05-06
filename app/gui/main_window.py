@@ -19,7 +19,9 @@ class MainWindow(tk.Tk):
         self.shared_logo_img = None
         if LOGO_PNG.exists():
             try:
-                self.shared_logo_img = ImageTk.PhotoImage(Image.open(str(LOGO_PNG)).resize((100, 100), Image.Resampling.LANCZOS))
+                self.shared_logo_img = ImageTk.PhotoImage(
+                    Image.open(str(LOGO_PNG)).resize((100, 100), Image.Resampling.LANCZOS)
+                )
                 log.info("Logo PNG cargado en memoria correctamente.")
             except Exception as e:
                 log.error(f"Error cargando PNG: {e}")
@@ -53,16 +55,21 @@ class MainWindow(tk.Tk):
                 relx=conf.get('relx', 0), rely=conf.get('rely', 0),
                 relwidth=conf.get('relw', 1), relheight=conf.get('relh', 1)
             )
-            # Pasamos None al logo de los componentes porque ahora lo gestiona MainWindow
             instance = conf['class'](container, **conf.get('args', {}))
             instance.pack(fill="both", expand=True)
             self.active_instances.append(instance)
 
-        # --- LOGO ÚNICO CENTRADO (FLOTANTE) ---
-        # Solo lo mostramos si hay más de un componente (Login/Register)
-        if len(components_config) > 1 and self.shared_logo_img:
-            logo_label = tk.Label(self, image=self.shared_logo_img, bd=0, highlightthickness=0)
-            logo_label.place(relx=0.5, rely=0.15, anchor="center")
+        # --- LOGO ÚNICO CENTRADO (TRANSPARENCIA REAL SIN CONTENEDORES) ---
+        if self.shared_logo_img and len(self.active_instances) >= 2:
+            self.update_idletasks() # Forzar cálculo de dimensiones reales
+            
+            # Pintamos la mitad izquierda en el Canvas de Register
+            canvas_left = self.active_instances[0].canvas
+            canvas_left.create_image(canvas_left.winfo_width(), 100, image=self.shared_logo_img, anchor="center")
 
-        log.info("Layout aplicado con logo centralizado.")
+            # Pintamos la mitad derecha en el Canvas de Login
+            canvas_right = self.active_instances[1].canvas
+            canvas_right.create_image(0, 100, image=self.shared_logo_img, anchor="center")
+
+        log.info("Layout aplicado con logo inyectado directamente en lienzos.")
         return self.active_instances
