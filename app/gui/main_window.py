@@ -34,6 +34,9 @@ class MainWindow(tk.Tk):
             except:
                 try: self.iconbitmap(str(LOGO_ICO))
                 except: pass
+        
+        # Vincular el evento de redimensión para actualizar el logo
+        self.bind("<Configure>", self._on_resize)
 
     def reset_layout(self):
         log.debug("Reset de layout...")
@@ -45,7 +48,6 @@ class MainWindow(tk.Tk):
     def set_layout(self, components_config):
         self.reset_layout()
         
-        # Contenedor para los componentes
         main_container = tk.Frame(self, bg=COLOR_BG_DARK)
         main_container.pack(fill="both", expand=True)
 
@@ -59,17 +61,49 @@ class MainWindow(tk.Tk):
             instance.pack(fill="both", expand=True)
             self.active_instances.append(instance)
 
-        # --- LOGO ÚNICO CENTRADO (TRANSPARENCIA REAL SIN CONTENEDORES) ---
-        if self.shared_logo_img and len(self.active_instances) >= 2:
-            self.update_idletasks() # Forzar cálculo de dimensiones reales
-            
-            # Pintamos la mitad izquierda en el Canvas de Register
-            canvas_left = self.active_instances[0].canvas
-            canvas_left.create_image(canvas_left.winfo_width(), 100, image=self.shared_logo_img, anchor="center")
-
-            # Pintamos la mitad derecha en el Canvas de Login
-            canvas_right = self.active_instances[1].canvas
-            canvas_right.create_image(0, 100, image=self.shared_logo_img, anchor="center")
-
-        log.info("Layout aplicado con logo inyectado directamente en lienzos.")
+        # Dibujo inicial
+        self.after(100, self._draw_floating_logo)
+        log.info("Layout aplicado.")
         return self.active_instances
+
+    def _on_resize(self, event):
+        """Manejador para cuando la ventana cambia de tamaño."""
+        # Solo redibujamos si el evento viene de la propia MainWindow (self)
+        if event.widget == self:
+            self._draw_floating_logo()
+
+    def _draw_floating_logo(self):
+        """Dibuja el logo en los canvas de los hijos manteniendo la transparencia."""
+        if not self.shared_logo_img or len(self.active_instances) < 2:
+            return
+
+        # Obtenemos los canvas de los componentes activos
+        try:
+            canvas_left = self.active_instances[0].canvas
+            canvas_right = self.active_instances[1].canvas
+
+            # Eliminamos versiones anteriores del logo para no solapar
+            canvas_left.delete("floating_logo")
+            canvas_right.delete("floating_logo")
+
+            # Redibujamos en la nueva posición
+            canvas_left.create_image(
+                canvas_left.winfo_width(), 
+                100, 
+                image=self.shared_logo_img, 
+                anchor="center",
+                tags="floating_logo"
+            )
+
+            canvas_right.create_image(
+                0, 
+                100, 
+                image=self.shared_logo_img, 
+                anchor="center",
+                tags="floating_logo"
+            )
+        except (AttributeError, tk.TclError):
+            # Si el componente no tiene canvas o se está destruyendo
+            pass
+
+    log.info("Layout aplicado con logo responsivo.")
