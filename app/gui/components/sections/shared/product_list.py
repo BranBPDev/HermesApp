@@ -16,6 +16,7 @@ class ProductList(tk.Frame):
         self.empty_text = empty_text
         self.show_action_btn = show_action_btn
         self.pm = pm_ref  
+        self._img_refs = {} # Almacén estricto de referencias para evitar Garbage Collection de Tkinter
         
         self.canvas = tk.Canvas(self, bg=COLOR_BG_DARK, highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
@@ -23,6 +24,7 @@ class ProductList(tk.Frame):
 
     def refresh(self):
         self.canvas.delete("all")
+        self._img_refs.clear() # Limpieza absoluta antes de redibujar para evitar fugas de memoria y parpadeos
         w, h = self.canvas.winfo_width(), self.canvas.winfo_height()
         if w <= 1: return
 
@@ -31,8 +33,6 @@ class ProductList(tk.Frame):
         if not products:
             self.canvas.create_text(w/2, h/2, text=self.empty_text, 
                                    fill=COLOR_TEXT_INACTIVE, font=FONT_INPUT, anchor="center")
-            if self.pm:
-                self._draw_pagination(w, h)
             return
 
         self._draw_table(products, w, h)
@@ -88,6 +88,7 @@ class ProductList(tk.Frame):
         # Intentar obtener de RAM inmediatamente
         cached = ImageLoader.get_image(url, size=(40, 40), mode="pil")
         if cached:
+            self._img_refs[url] = cached # Persistir referencia activa
             self.canvas.create_image(x, y, image=cached, anchor="nw")
         else:
             # Placeholder mientras descarga
@@ -96,13 +97,15 @@ class ProductList(tk.Frame):
             # Callback que se ejecuta cuando la imagen está lista
             def on_img_ready(res):
                 if self.winfo_exists(): # Evitar errores si el usuario cerró la pestaña
-                    self.after(0, lambda: self._finalize_image(res['pil'], x, y, temp_id))
+                    self.after(0, lambda: self._finalize_image(res['pil'], url, x, y, temp_id))
             
             ImageLoader.load_async(url, on_img_ready, size=(40, 40))
 
-    def _finalize_image(self, pil_img, x, y, temp_id):
-        self.canvas.delete(temp_id)
-        self.canvas.create_image(x, y, image=pil_img, anchor="nw")
+    def _finalize_image(self, pil_img, url, x, y, temp_id):
+        if self.winfo_exists():
+            self.canvas.delete(temp_id)
+            self._img_refs[url] = pil_img # Evita que la imagen recién descargada sea destruida por el GC
+            self.canvas.create_image(x, y, image=pil_img, anchor="nw")
 
     def _draw_pagination(self, w, h):
         curr = self.pm.current_page + 1

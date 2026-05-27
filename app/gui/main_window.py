@@ -100,7 +100,7 @@ class MainWindow(tk.Tk):
             if w_left > 1:
                 canvas_left.create_image(
                     w_left, 
-                    100, 
+                    80, 
                     image=self.shared_logo_img, 
                     anchor="center",
                     tags="floating_logo"
@@ -108,7 +108,7 @@ class MainWindow(tk.Tk):
 
                 canvas_right.create_image(
                     0, 
-                    100, 
+                    80, 
                     image=self.shared_logo_img, 
                     anchor="center",
                     tags="floating_logo"
