@@ -61,14 +61,14 @@ class MainWindow(tk.Tk):
             instance.pack(fill="both", expand=True)
             self.active_instances.append(instance)
 
-        # Dibujo inicial
+        # Dibujo inicial seguro
         self.after(100, self._draw_floating_logo)
         log.info("Layout aplicado.")
         return self.active_instances
 
     def _on_resize(self, event):
         """Manejador para cuando la ventana cambia de tamaño."""
-        # Solo redibujamos si el evento viene de la propia MainWindow (self)
+        # CRUCIAL: Detener propagación y procesar SOLO si el evento proviene estrictamente de MainWindow
         if event.widget == self:
             self._draw_floating_logo()
 
@@ -77,33 +77,36 @@ class MainWindow(tk.Tk):
         if not self.shared_logo_img or len(self.active_instances) < 2:
             return
 
-        # Obtenemos los canvas de los componentes activos
+        # Obtenemos los canvas de los componentes activos de forma segura
         try:
-            canvas_left = self.active_instances[0].canvas
-            canvas_right = self.active_instances[1].canvas
+            canvas_left = getattr(self.active_instances[0], "canvas", None)
+            canvas_right = getattr(self.active_instances[1], "canvas", None)
+
+            if not canvas_left or not canvas_right:
+                return
 
             # Eliminamos versiones anteriores del logo para no solapar
             canvas_left.delete("floating_logo")
             canvas_right.delete("floating_logo")
 
-            # Redibujamos en la nueva posición
-            canvas_left.create_image(
-                canvas_left.winfo_width(), 
-                100, 
-                image=self.shared_logo_img, 
-                anchor="center",
-                tags="floating_logo"
-            )
+            # Validar dimensiones mínimas antes de renderizar en posiciones relativas
+            w_left = canvas_left.winfo_width()
+            if w_left > 1:
+                canvas_left.create_image(
+                    w_left, 
+                    100, 
+                    image=self.shared_logo_img, 
+                    anchor="center",
+                    tags="floating_logo"
+                )
 
-            canvas_right.create_image(
-                0, 
-                100, 
-                image=self.shared_logo_img, 
-                anchor="center",
-                tags="floating_logo"
-            )
+                canvas_right.create_image(
+                    0, 
+                    100, 
+                    image=self.shared_logo_img, 
+                    anchor="center",
+                    tags="floating_logo"
+                )
         except (AttributeError, tk.TclError):
-            # Si el componente no tiene canvas o se está destruyendo
+            # Si el componente se está destruyendo o mutando estructuralmente
             pass
-
-    log.info("Layout aplicado con logo responsivo.")
