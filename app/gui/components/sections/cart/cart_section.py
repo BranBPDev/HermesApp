@@ -28,7 +28,7 @@ class CartSection(tk.Frame):
         )
         self.list_view.pack(fill="both", expand=True, padx=20, pady=10)
         
-        self.refresh()
+        # Eliminado self.refresh() directo para evitar el doble dibujado inicial con H=1
 
     def _get_cart_data(self, height):
         self.user_id = self.auth.current_user_id

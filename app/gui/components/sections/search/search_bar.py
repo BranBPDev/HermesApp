@@ -29,6 +29,6 @@ class SearchBar(tk.Frame):
     def draw(self):
         self.canvas.delete("all")
         w = self.canvas.winfo_width()
-        # Ajustamos Y a 30 (centro del frame de 60) para que sea más compacto
-        self.inp.draw(30, 30, w=w-200)
-        self.btn.draw(w-150, 30, w=120)
+        # Ajustamos Y a 7 para que el CInput de altura 45 quede perfectamente centrado en el alto de 60 sin cortarse
+        self.inp.draw(30, 7, w=w-200)
+        self.btn.draw(w-150, 5, w=120)

@@ -31,6 +31,8 @@ class ProductList(tk.Frame):
         if not products:
             self.canvas.create_text(w/2, h/2, text=self.empty_text, 
                                    fill=COLOR_TEXT_INACTIVE, font=FONT_INPUT, anchor="center")
+            if self.pm:
+                self._draw_pagination(w, h)
             return
 
         self._draw_table(products, w, h)
@@ -115,8 +117,12 @@ class ProductList(tk.Frame):
             text_color = "white" if active else COLOR_TEXT_INACTIVE
             ShapeDrawer.rounded_rect(self.canvas, x-15, y_pos-15, 30, 30, 15, fill=color, tags=tag)
             self.canvas.create_text(x, y_pos, text=text, fill=text_color, font=FONT_INPUT, tags=tag)
+            
+            # SOLO vinculamos el evento si el botón está verdaderamente activo
             if delta is not None and active:
                 self.canvas.tag_bind(tag, "<Button-1>", lambda e: self._change_page(delta))
+            else:
+                self.canvas.tag_unbind(tag, "<Button-1>")
 
         draw_page_btn(x_center - 50, "<", has_prev, -1)
         ShapeDrawer.rounded_rect(self.canvas, x_center-20, y_pos-15, 40, 30, 8, fill=COLOR_BADGE_BG)
@@ -124,5 +130,11 @@ class ProductList(tk.Frame):
         draw_page_btn(x_center + 50, ">", has_next, 1)
 
     def _change_page(self, delta):
+        # Doble validación de seguridad antes de alterar el estado del manager
+        if delta == -1 and self.pm.current_page <= 0:
+            return
+        if delta == 1 and not self.pm.has_more():
+            return
+            
         self.pm.current_page += delta
         self.refresh()
