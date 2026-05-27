@@ -1,5 +1,4 @@
 import tkinter as tk
-from PIL import ImageTk  # <--- Importación necesaria para convertir imágenes PIL a formato Tkinter
 from app.gui.components.shared.visual_elements import ShapeDrawer
 from app.gui.styles.styles import (
     COLOR_BG_DARK, COLOR_TEXT_MAIN, COLOR_TEXT_INACTIVE, 
@@ -17,26 +16,31 @@ class ProductList(tk.Frame):
         self.empty_text = empty_text
         self.show_action_btn = show_action_btn
         self.pm = pm_ref  
-        self._img_refs = {} # Almacén estricto de referencias de ImageTk.PhotoImage
+        self._img_refs = {} 
         
         self.canvas = tk.Canvas(self, bg=COLOR_BG_DARK, highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
         
-        # Guardamos el último tamaño procesado para evitar bucles infinitos y parpadeos en el <Configure>
         self._last_w = 0
         self._last_h = 0
+        self._refresh_timer = None 
         self.canvas.bind("<Configure>", self._on_configure)
 
     def _on_configure(self, event):
-        # Solo refresca si el tamaño real en píxeles ha cambiado de verdad
         if event.width != self._last_w or event.height != self._last_h:
             self._last_w = event.width
             self._last_h = event.height
             self.refresh()
 
     def refresh(self):
+        # Cancelamos cualquier redibujado anterior para evitar el flashazo del doble dibujado
+        if self._refresh_timer:
+            self.after_cancel(self._refresh_timer)
+        self._refresh_timer = self.after(15, self._do_refresh)
+
+    def _do_refresh(self):
         self.canvas.delete("all")
-        self._img_refs.clear() # Limpieza absoluta segura antes de redibujar
+        self._img_refs.clear() 
         w, h = self._last_w, self._last_h
         if w <= 1: 
             w, h = self.canvas.winfo_width(), self.canvas.winfo_height()
@@ -75,7 +79,6 @@ class ProductList(tk.Frame):
             bg_color = "#1a1a1a" if i % 2 == 0 else COLOR_BG_DARK
             ShapeDrawer.rounded_rect(self.canvas, 25, y-25, w-50, row_h-10, 8, fill=bg_color)
             
-            # Gestión de imagen con el nuevo ImageLoader
             img_url = p.get('image_url') or p.get('img_url')
             self._handle_image(img_url, 40, y-20)
 
@@ -99,20 +102,16 @@ class ProductList(tk.Frame):
             self.canvas.create_rectangle(x, y, x+40, y+40, fill="#333333", outline="")
             return
 
-        # Intentar obtener de RAM inmediatamente
         cached = ImageLoader.get_image(url, size=(40, 40), mode="pil")
         if cached:
-            # CORRECCIÓN: Convertir de PIL a ImageTk.PhotoImage para que Tkinter pueda pintarlo
-            tk_img = ImageTk.PhotoImage(cached)
-            self._img_refs[url] = tk_img # Persistir referencia activa
-            self.canvas.create_image(x, y, image=tk_img, anchor="nw")
+            # NO convertir de nuevo, ya viene como ImageTk.PhotoImage desde image_util.py
+            self._img_refs[url] = cached 
+            self.canvas.create_image(x, y, image=cached, anchor="nw")
         else:
-            # Placeholder mientras descarga
             temp_id = self.canvas.create_rectangle(x, y, x+40, y+40, fill="#222222", outline="")
             
-            # Callback que se ejecuta cuando la imagen está lista
             def on_img_ready(res):
-                if self.winfo_exists(): # Evitar errores si el usuario cerró la pestaña
+                if self.winfo_exists(): 
                     self.after(0, lambda: self._finalize_image(res['pil'], url, x, y, temp_id))
             
             ImageLoader.load_async(url, on_img_ready, size=(40, 40))
@@ -121,10 +120,9 @@ class ProductList(tk.Frame):
         if self.winfo_exists():
             if temp_id in self.canvas.find_all():
                 self.canvas.delete(temp_id)
-            # CORRECCIÓN: Convertir de PIL a ImageTk.PhotoImage al finalizar la descarga asíncrona
-            tk_img = ImageTk.PhotoImage(pil_img)
-            self._img_refs[url] = tk_img # Evita que la imagen recién descargada sea destruida por el GC
-            self.canvas.create_image(x, y, image=tk_img, anchor="nw")
+            # NO convertir de nuevo
+            self._img_refs[url] = pil_img 
+            self.canvas.create_image(x, y, image=pil_img, anchor="nw")
 
     def _draw_pagination(self, w, h):
         curr = self.pm.current_page + 1
@@ -140,7 +138,6 @@ class ProductList(tk.Frame):
             ShapeDrawer.rounded_rect(self.canvas, x-15, y_pos-15, 30, 30, 15, fill=color, tags=tag)
             self.canvas.create_text(x, y_pos, text=text, fill=text_color, font=FONT_INPUT, tags=tag)
             
-            # SOLO vinculamos el evento si el botón está verdaderamente activo
             if delta is not None and active:
                 self.canvas.tag_bind(tag, "<Button-1>", lambda e: self._change_page(delta))
             else:
@@ -152,7 +149,6 @@ class ProductList(tk.Frame):
         draw_page_btn(x_center + 50, ">", has_next, 1)
 
     def _change_page(self, delta):
-        # Doble validación de seguridad antes de alterar el estado del manager
         if delta == -1 and self.pm.current_page <= 0:
             return
         if delta == 1 and not self.pm.has_more():
