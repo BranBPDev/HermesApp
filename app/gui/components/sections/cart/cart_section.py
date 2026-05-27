@@ -39,4 +39,6 @@ class CartSection(tk.Frame):
     def refresh(self):
         self.user_id = self.auth.current_user_id
         self.cm.log.info(f"Refrescando vista de carrito para usuario: {self.user_id}")
+        self.update_idletasks()
+        
         self.list_view.refresh()
