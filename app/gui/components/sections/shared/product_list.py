@@ -1,10 +1,11 @@
 import tkinter as tk
+from PIL import ImageTk  # <--- Importación necesaria para convertir imágenes PIL a formato Tkinter
 from app.gui.components.shared.visual_elements import ShapeDrawer
 from app.gui.styles.styles import (
     COLOR_BG_DARK, COLOR_TEXT_MAIN, COLOR_TEXT_INACTIVE, 
     COLOR_PRIMARY, FONT_LABEL, FONT_INPUT, COLOR_BADGE_BG
 )
-from app.utils.image_util import ImageLoader # <--- Integrado
+from app.utils.image_util import ImageLoader 
 import logging
 
 class ProductList(tk.Frame):
@@ -16,17 +17,30 @@ class ProductList(tk.Frame):
         self.empty_text = empty_text
         self.show_action_btn = show_action_btn
         self.pm = pm_ref  
-        self._img_refs = {} # Almacén estricto de referencias para evitar Garbage Collection de Tkinter
+        self._img_refs = {} # Almacén estricto de referencias de ImageTk.PhotoImage
         
         self.canvas = tk.Canvas(self, bg=COLOR_BG_DARK, highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
-        self.canvas.bind("<Configure>", lambda e: self.refresh())
+        
+        # Guardamos el último tamaño procesado para evitar bucles infinitos y parpadeos en el <Configure>
+        self._last_w = 0
+        self._last_h = 0
+        self.canvas.bind("<Configure>", self._on_configure)
+
+    def _on_configure(self, event):
+        # Solo refresca si el tamaño real en píxeles ha cambiado de verdad
+        if event.width != self._last_w or event.height != self._last_h:
+            self._last_w = event.width
+            self._last_h = event.height
+            self.refresh()
 
     def refresh(self):
         self.canvas.delete("all")
-        self._img_refs.clear() # Limpieza absoluta antes de redibujar para evitar fugas de memoria y parpadeos
-        w, h = self.canvas.winfo_width(), self.canvas.winfo_height()
-        if w <= 1: return
+        self._img_refs.clear() # Limpieza absoluta segura antes de redibujar
+        w, h = self._last_w, self._last_h
+        if w <= 1: 
+            w, h = self.canvas.winfo_width(), self.canvas.winfo_height()
+            if w <= 1: return
 
         products = self.get_items_func(h)
         
@@ -88,8 +102,10 @@ class ProductList(tk.Frame):
         # Intentar obtener de RAM inmediatamente
         cached = ImageLoader.get_image(url, size=(40, 40), mode="pil")
         if cached:
-            self._img_refs[url] = cached # Persistir referencia activa
-            self.canvas.create_image(x, y, image=cached, anchor="nw")
+            # CORRECCIÓN: Convertir de PIL a ImageTk.PhotoImage para que Tkinter pueda pintarlo
+            tk_img = ImageTk.PhotoImage(cached)
+            self._img_refs[url] = tk_img # Persistir referencia activa
+            self.canvas.create_image(x, y, image=tk_img, anchor="nw")
         else:
             # Placeholder mientras descarga
             temp_id = self.canvas.create_rectangle(x, y, x+40, y+40, fill="#222222", outline="")
@@ -103,9 +119,12 @@ class ProductList(tk.Frame):
 
     def _finalize_image(self, pil_img, url, x, y, temp_id):
         if self.winfo_exists():
-            self.canvas.delete(temp_id)
-            self._img_refs[url] = pil_img # Evita que la imagen recién descargada sea destruida por el GC
-            self.canvas.create_image(x, y, image=pil_img, anchor="nw")
+            if temp_id in self.canvas.find_all():
+                self.canvas.delete(temp_id)
+            # CORRECCIÓN: Convertir de PIL a ImageTk.PhotoImage al finalizar la descarga asíncrona
+            tk_img = ImageTk.PhotoImage(pil_img)
+            self._img_refs[url] = tk_img # Evita que la imagen recién descargada sea destruida por el GC
+            self.canvas.create_image(x, y, image=tk_img, anchor="nw")
 
     def _draw_pagination(self, w, h):
         curr = self.pm.current_page + 1
