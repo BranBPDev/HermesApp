@@ -1,5 +1,7 @@
 import tkinter as tk
+from PIL import Image, ImageTk
 from app.gui.styles.styles import COLOR_BG_SIDE, COLOR_PRIMARY
+from app.utils.paths_util import LOGO_PNG
 from app.utils.logger_util import HermesLogger
 
 class Sidebar(tk.Frame):
@@ -23,6 +25,16 @@ class Sidebar(tk.Frame):
         self.active_setter = None
         self.buttons = {} 
 
+        # Cargar y redimensionar el logo estático propio para la cabecera del sidebar
+        self.sidebar_logo_img = None
+        if LOGO_PNG.exists():
+            try:
+                self.sidebar_logo_img = ImageTk.PhotoImage(
+                    Image.open(str(LOGO_PNG)).resize((35, 35), Image.Resampling.LANCZOS)
+                )
+            except Exception as e:
+                self.log.error(f"Error cargando logo en el Sidebar: {e}")
+
         self._create_buttons()
         self.canvas.bind("<Configure>", self._reposition)
         
@@ -31,7 +43,13 @@ class Sidebar(tk.Frame):
 
     def _create_buttons(self):
         self.log.debug("Generando botones del sidebar...")
-        btn_defs = [("🔍", "search", 50), ("🛒", "cart", 110), ("⏻", "logout", -40)]
+        
+        # Dibujar la imagen estática del logo en el tope del Canvas si se cargó correctamente
+        if self.sidebar_logo_img:
+            self.canvas.create_image(0, 0, image=self.sidebar_logo_img, anchor="center", tags="sidebar_logo")
+
+        # Reajuste de posiciones Y fijas hacia abajo para dar espacio limpio al logotipo (Y=45)
+        btn_defs = [("🔍", "search", 120), ("🛒", "cart", 180), ("⏻", "logout", -40)]
         
         for icon, tag, y_pos in btn_defs:
             self.log.debug(f"Creando elementos para botón: '{tag}' en Y_offset:{y_pos}")
@@ -57,6 +75,11 @@ class Sidebar(tk.Frame):
 
             setter = make_setter(item, tag)
             self.buttons[tag] = {"id": item, "rect": rect, "y": y_pos, "setter": setter}
+
+            # Vincular estado activo inicial si corresponde
+            if tag == self.active_tag:
+                setter(True)
+                self.active_setter = setter
 
             # Bindeo a nivel de TAG (afecta tanto al texto como al rectangulo)
             self.canvas.tag_bind(tag, "<Enter>", lambda e, i=item, t=tag: self._on_enter(i, t))
@@ -85,6 +108,10 @@ class Sidebar(tk.Frame):
             
         x_center = w / 2
         self.log.debug(f"[REPOSITION] Ajustando layout. W:{w}, H:{h}, CenterX:{x_center}")
+        
+        # Ubicar el logo de forma estática en la parte superior central
+        if self.sidebar_logo_img:
+            self.canvas.coords("sidebar_logo", x_center, 45)
         
         for tag, btn in self.buttons.items():
             y = btn["y"] if btn["y"] > 0 else h + btn["y"]

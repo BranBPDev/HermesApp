@@ -77,6 +77,12 @@ class MainWindow(tk.Tk):
         if not self.shared_logo_img or len(self.active_instances) < 2:
             return
 
+        # Comprobar estrictamente que las dos primeras instancias correspondan a Register y Login
+        class_name_left = self.active_instances[0].__class__.__name__
+        class_name_right = self.active_instances[1].__class__.__name__
+        if class_name_left != "Register" or class_name_right != "Login":
+            return
+
         # Obtenemos los canvas de los componentes activos de forma segura
         try:
             canvas_left = getattr(self.active_instances[0], "canvas", None)
