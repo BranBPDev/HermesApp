@@ -5,9 +5,17 @@ COMMON_HEADERS = {
     'Connection': 'keep-alive',
 }
 
-# --- MERCADONA (WH=1342 para zona Noroeste/Ourense) ---
-MERCADONA_API_INDEX = "https://tienda.mercadona.es/api/categories/?lang=es&wh=1342"
-MERCADONA_API_CAT   = "https://tienda.mercadona.es/api/categories/{cat_id}/?lang=es&wh=1342"
+# --- MERCADONA (WH=4592) ---
+MERCADONA_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'es-ES,es;q=0.9',
+    'Referer': "https://tienda.mercadona.es/",
+    'Origin': "https://tienda.mercadona.es",
+    'Connection': 'keep-alive'
+}
+MERCADONA_API_INDEX = "https://tienda.mercadona.es/api/categories/?lang=es&wh=4592"
+MERCADONA_API_CAT   = "https://tienda.mercadona.es/api/categories/{cat_id}/?lang=es&wh=4592"
 
 # --- EROSKI ---
 EROSKI_LOAD_URL = "https://supermercado.eroski.es/es/supermarket.productlist:loadpage?t:ac={cat}"
