@@ -3,11 +3,18 @@ from app.gui.styles.styles import COLOR_BG_SIDE, COLOR_PRIMARY
 from app.utils.logger_util import HermesLogger
 
 class Sidebar(tk.Frame):
-    def __init__(self, master, current_view="search", **kwargs):
-        super().__init__(master, bg=COLOR_BG_SIDE)
+    def __init__(self, master, current_view="search", app=None, **kwargs):
+        super().__init__(master, bg=COLOR_BG_SIDE, **kwargs)
         # USAMOS TU LOGGER OFICIAL
         self.log = HermesLogger.get_logger("SIDEBAR")
         self.log.info(f"--- INICIALIZANDO SIDEBAR --- (Vista inicial: {current_view})")
+        
+        # Guardamos la referencia directa de la app para evitar errores de jerarquía
+        self.app = app
+        
+        # Forzar un ancho fijo inicial para evitar que la vista principal solape el sidebar
+        self.config(width=60)
+        self.pack_propagate(False)
         
         self.canvas = tk.Canvas(self, bg=COLOR_BG_SIDE, highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
@@ -93,8 +100,8 @@ class Sidebar(tk.Frame):
         self.log.info(f"🚀 [CLICK DETECTADO] BOTÓN SIDEBAR: {tag.upper()}")
         self.log.info(f"==================================================")
         try:
-            # Subir en la jerarquía hasta encontrar la app manager
-            app = self.master.master.app 
+            # Intentar usar la referencia inyectada, si no, fallback seguro a la jerarquía anterior
+            app = self.app if self.app is not None else self.master.master.app 
             self.log.debug(f"Jerarquía resuelta. Referencia App: {app}")
             
             if tag == "logout":

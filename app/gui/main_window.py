@@ -52,13 +52,13 @@ class MainWindow(tk.Tk):
         main_container.pack(fill="both", expand=True)
 
         for conf in components_config:
-            container = tk.Frame(main_container, bg=COLOR_BG_DARK)
-            container.place(
+            # Creamos la instancia directamente asociada al contenedor principal
+            instance = conf['class'](main_container, **conf.get('args', {}))
+            # Aplicamos las coordenadas del layout directamente en el componente para evitar desajustes
+            instance.place(
                 relx=conf.get('relx', 0), rely=conf.get('rely', 0),
                 relwidth=conf.get('relw', 1), relheight=conf.get('relh', 1)
             )
-            instance = conf['class'](container, **conf.get('args', {}))
-            instance.pack(fill="both", expand=True)
             self.active_instances.append(instance)
 
         # Dibujo inicial seguro
@@ -107,6 +107,6 @@ class MainWindow(tk.Tk):
                     anchor="center",
                     tags="floating_logo"
                 )
-        except (AttributeError, tk.TclError):
-            # Si el componente se está destruyendo o mutando estructuralmente
+        except (AttributeError, tk.TclError) as e:
+            log.error(f"Error al dibujar el logo flotante. {e}", exc_info=True)
             pass
