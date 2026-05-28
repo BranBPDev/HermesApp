@@ -1,3 +1,4 @@
+import threading
 from app.managers.gui_manager import GUIManager
 from app.managers.cart_manager import CartManager
 from app.utils.logger_util import HermesLogger
@@ -5,6 +6,7 @@ from app.utils.paths_util import SESSION_JSON
 from app.utils.json_util import read_json_local
 from app.utils.crypto_util import decode_from_base64
 from app.utils.update_util import is_latest_version, perform_update
+from app.managers.scraper_manager import run_all_scrapers_parallel
 
 class AppManager:
     def __init__(self):
@@ -17,21 +19,20 @@ class AppManager:
         try:
             if not is_latest_version():
                 self.gui.show_update(perform_update)
-            elif self._try_autologin():
-                self.show_main()
             else:
-                self.show_login()
+                self.log.info("Iniciando hilo de scraping en background...")
+                threading.Thread(target=run_all_scrapers_parallel, daemon=True).start()
+                if self._try_autologin():
+                    self.show_main()
+                else:
+                    self.show_login()
         except Exception as e:
             self.log.error(f"Error crítico: {e}")
             self.show_login()
         self.gui.start_loop()
 
     def _try_autologin(self):
-        import threading
-        from app.managers.scraper_manager import run_all_scrapers_parallel
 
-        threading.Thread(target=run_all_scrapers_parallel, daemon=True).start()
-        
         if not SESSION_JSON.exists(): return False
         
         try:

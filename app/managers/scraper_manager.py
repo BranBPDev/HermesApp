@@ -64,8 +64,6 @@ def _execute_scraper(name):
         
         # 3. Limpieza y Persistencia
         dao = ProductDAO()
-        # Borramos todo lo anterior del supermercado (misma fecha o distinta)
-        dao.delete_all_by_supermarket(name) 
         
         # Guardamos JSON (sobrescribe) e insertamos en DB
         save_json(final_file, final_products)
