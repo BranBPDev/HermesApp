@@ -27,7 +27,13 @@ class AppManager:
         self.gui.start_loop()
 
     def _try_autologin(self):
+        import threading
+        from app.managers.scraper_manager import run_all_scrapers_parallel
+
+        threading.Thread(target=run_all_scrapers_parallel, daemon=True).start()
+        
         if not SESSION_JSON.exists(): return False
+        
         try:
             data = read_json_local(SESSION_JSON)
             from app.managers.auth_manager import AuthManager
@@ -40,6 +46,7 @@ class AppManager:
 
     def show_login(self):
         from app.managers.auth_manager import AuthManager
+
         if not self.auth: self.auth = AuthManager()
         self.gui.show_auth(self.auth, self.show_main)
 
