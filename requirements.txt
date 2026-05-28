@@ -1,4 +1,5 @@
 certifi
+curl_cffi
 requests
 urllib3
 pyinstaller
