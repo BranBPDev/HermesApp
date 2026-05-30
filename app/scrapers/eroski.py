@@ -1,5 +1,6 @@
-from bs4 import BeautifulSoup
+import json
 from concurrent.futures import ThreadPoolExecutor
+from bs4 import BeautifulSoup
 from app.models.scraper_base import BaseScraper
 from app.config.scrapers_config import EROSKI_HEADERS, EROSKI_BASE_URL, EROSKI_AJAX_URL
 
@@ -13,7 +14,7 @@ class EroskiScraper(BaseScraper):
         payload = {"t:zoneid": "productListZone", "t:formdata": token, "pageNumber": str(page)}
         
         try:
-            # Usamos el session del BaseScraper
+            # Usamos el session del BaseScraper (ya configurado)
             r = self._session.post(EROSKI_AJAX_URL, data=payload, timeout=25)
             
             if r.status_code == 200:
@@ -25,17 +26,15 @@ class EroskiScraper(BaseScraper):
                         soup = BeautifulSoup(item[1], 'html.parser')
                         for p in soup.find_all(attrs={"data-metrics": True}):
                             try:
-                                # Nota: Se asume que el objeto data-metrics ya está accesible vía parseo de atributos 
-                                # o procesado directamente sin necesidad de la librería externa si se evita el import.
-                                # Como no puedo importar json, extraemos los datos necesarios directamente si es posible
-                                # o delegamos al procesamiento nativo de la respuesta.
-                                m = p.get('data-metrics')
-                                # Extraemos info necesaria
-                                # La lógica original se mantiene adaptada a add_product
+                                # Aquí es donde se necesita json para parsear el string de data-metrics
+                                m = json.loads(p.get('data-metrics'))
+                                product_data = m.get("ecommerce", {}).get("items", [{}])[0]
+                                
+                                # Integramos con la aplicación usando add_product
                                 self.add_product(
-                                    name=p.get('data-name'), # Ajustar según estructura HTML si es necesario
-                                    price=p.get('data-price'),
-                                    image_url=f"https://supermercado.eroski.es/images/{p.get('data-id')}.jpg"
+                                    name=product_data.get("item_name"),
+                                    price=product_data.get("price"),
+                                    image_url=f"https://supermercado.eroski.es/images/{product_data.get('item_id')}.jpg"
                                 )
                             except: 
                                 continue
@@ -57,7 +56,7 @@ class EroskiScraper(BaseScraper):
         token = token_input['value']
         self.log.info(f"Token obtenido. Iniciando carga de {self.max_pages} páginas...")
 
-        # 2. Ejecución con ThreadPoolExecutor
+        # 2. Ejecución con ThreadPoolExecutor (exactamente como en tu test)
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             executor.map(lambda p: self._fetch_and_parse(p, token), range(1, self.max_pages + 1))
         
