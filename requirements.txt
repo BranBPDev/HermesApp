@@ -8,5 +8,5 @@ h2
 psycopg2-binary
 bcrypt
 python-dotenv
-customtkinter
+beautifulsoup4
 Pillow
