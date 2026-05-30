@@ -3,69 +3,46 @@ import re
 class HermesRefactorer:
     @staticmethod
     def get_normalized_data(name: str, price: float, unit_type_raw: str = None):
-        """
-        ORDEN LÓGICO:
-        1. Cálculo de normalización (Precio y Cantidad).
-        2. Cambio de etiqueta de unidad (Al final).
-        """
         if not price or not isinstance(price, (int, float)): 
-            return 0.0, 0.0, 'ud'
+            return 0.0, 1.0, 'ud'
 
         name_clean = name.lower().replace(',', '.')
-        raw_clean = (unit_type_raw or "").lower().strip()
         
-        # --- PASO 1: CÁLCULO DE NORMALIZACIÓN ---
-        price_norm = price
-        factor = 1.0
-        # Usamos una variable interna para detectar el tipo de magnitud
-        magnitud = "unidad" 
-
-        # Si es docena, calculamos el precio por unidad individual (precio / 12)
-        if raw_clean == 'la docena':
-            price_norm = round(price / 12, 2)
-            factor = 12.0
-            magnitud = "unidad"
-        else:
-            # Buscamos patrones de peso/volumen (ej: 300ml, 1kg, 2x125g)
-            unit_pattern = r'(\d+[\.]?\d*)\s*(ml|cl|l(?:itros)?|kg|kilo(?:s)?|g(?:r(?:amos)?)?)'
-            pack_match = re.search(r'(\d+)\s*[xX]\s*' + unit_pattern, name_clean)
+        # 1. Intentar detectar formato Multiplicador (ej: 6x56 g, 24x33 cl)
+        # Regex: busca numero, opcional x, numero, unidad
+        pack_pattern = r'(\d+)\s*[xX]\s*(\d+(?:\.\d+)?)\s*(ml|cl|l|litros|g|gr|gramos|kg|kilo)'
+        match_pack = re.search(pack_pattern, name_clean)
+        
+        if match_pack:
+            qty = float(match_pack.group(1))
+            val = float(match_pack.group(2))
+            unit_str = match_pack.group(3)
+            total_val = qty * val
             
-            qty_encontrada = 0.0
-            texto_unidad = ""
+            # Convertimos a unidad base
+            if 'ml' in unit_str or 'cl' in unit_str or 'l' in unit_str:
+                if 'ml' in unit_str: total_val /= 1000
+                elif 'cl' in unit_str: total_val /= 100
+                return round(price / total_val, 2), round(total_val, 3), 'L'
+            elif 'g' in unit_str or 'kg' in unit_str:
+                if 'g' in unit_str: total_val /= 1000
+                return round(price / total_val, 2), round(total_val, 3), 'kg'
 
-            if pack_match:
-                qty_encontrada = float(pack_match.group(1)) * float(pack_match.group(2))
-                texto_unidad = pack_match.group(3)
-            else:
-                single_match = re.search(unit_pattern, name_clean)
-                if single_match:
-                    qty_encontrada = float(single_match.group(1))
-                    texto_unidad = single_match.group(2)
+        # 2. Si no es pack, buscamos formato simple (ej: 1 litro, 500g)
+        single_pattern = r'(\d+(?:\.\d+)?)\s*(ml|cl|l|litros|g|gr|gramos|kg|kilo)'
+        match_single = re.search(single_pattern, name_clean)
+        
+        if match_single:
+            val = float(match_single.group(1))
+            unit_str = match_single.group(2)
+            
+            if 'ml' in unit_str or 'cl' in unit_str or 'l' in unit_str:
+                if 'ml' in unit_str: val /= 1000
+                elif 'cl' in unit_str: val /= 100
+                return round(price / val, 2), round(val, 3), 'L'
+            elif 'g' in unit_str or 'kg' in unit_str:
+                if 'g' in unit_str: val /= 1000
+                return round(price / val, 2), round(val, 3), 'kg'
 
-            if qty_encontrada > 0:
-                factor = qty_encontrada
-                # Lógica para determinar si el factor debe convertirse a base (L o Kg)
-                if any(u in texto_unidad for u in ['l', 'litro']):
-                    magnitud = "litro"
-                    if 'ml' in texto_unidad: factor = qty_encontrada / 1000
-                    elif 'cl' in texto_unidad: factor = qty_encontrada / 100
-                elif any(u in texto_unidad for u in ['g', 'kg', 'kilo']):
-                    magnitud = "kilo"
-                    if texto_unidad == 'g' or 'gramo' in texto_unidad: factor = qty_encontrada / 1000
-                
-                price_norm = round(price / factor, 2) if factor > 0 else price
-            else:
-                # Si no hay match de texto, miramos el unit_type_raw para saber la magnitud
-                if 'kilo' in raw_clean: magnitud = "kilo"
-                elif 'litro' in raw_clean: magnitud = "litro"
-
-        # --- PASO 2: CAMBIO DE TIPO DE UNIDAD (ESTRICTAMENTE AL FINAL) ---
-        # Ahora que ya tenemos los cálculos hechos, mapeamos a tus etiquetas finales
-        if magnitud == "kilo":
-            final_unit = "kg"
-        elif magnitud == "litro":
-            final_unit = "L"
-        else:
-            final_unit = "ud"
-
-        return price_norm, round(factor, 3), final_unit
+        # 3. Fallback: Si no pudimos calcular nada, devolvemos el precio original
+        return float(price), 1.0, 'ud'

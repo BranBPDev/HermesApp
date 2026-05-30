@@ -1,13 +1,13 @@
 # --- COMMON ---
 COMMON_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/120.0.0.0',
     'Accept-Language': 'es-ES,es;q=0.9',
     'Connection': 'keep-alive',
 }
 
 # --- MERCADONA (WH=4592) ---
 MERCADONA_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/120.0.0.0',
     'Accept': 'application/json, text/plain, */*',
     'Accept-Language': 'es-ES,es;q=0.9',
     'Referer': "https://tienda.mercadona.es/",
@@ -18,30 +18,16 @@ MERCADONA_API_INDEX = "https://tienda.mercadona.es/api/categories/?lang=es&wh=45
 MERCADONA_API_CAT   = "https://tienda.mercadona.es/api/categories/{cat_id}/?lang=es&wh=4592"
 
 # --- EROSKI ---
-EROSKI_LOAD_URL = "https://supermercado.eroski.es/es/supermarket.productlist:loadpage?t:ac={cat}"
-EROSKI_REFERER = "https://supermercado.eroski.es/es/supermercado/2059806-alimentacion/"
+EROSKI_BASE_URL = "https://supermercado.eroski.es/es/supermercado/2059806-alimentacion/"
+EROSKI_AJAX_URL = "https://supermercado.eroski.es/es/supermarket.productfiltermenu:globalfilter"
 EROSKI_HEADERS = {
     **COMMON_HEADERS,
     "X-Requested-With": "XMLHttpRequest",
+    "X-Tapestry-Ajax": "true",
     "Origin": "https://supermercado.eroski.es",
-    "Referer": EROSKI_REFERER
+    "Referer": EROSKI_BASE_URL,
+    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
 }
-EROSKI_CATEGORIES = [
-    "2059806-alimentacion/2059988-aceite-vinagre-sal-harina-y-pan-rallado",
-    "2059806-alimentacion/2060067-aceitunas-y-encurtidos",
-    "2059806-alimentacion/2060015-conservas-de-pescado",
-    "2059806-alimentacion/2060076-frutos-secos-patatas-y-snacks",
-    "2059806-alimentacion/2059807-leche-batidos-y-bebidas-vegetales",
-    "2059806-alimentacion/2060029-legumbres-arroz-y-pasta",
-    "2059806-alimentacion/2059851-mantequilla-nata-y-cremas",
-    "2059806-alimentacion/2060042-platos-preparados",
-    "2059806-alimentacion/2059831-postres-lacteos-",
-    "2059806-alimentacion/5000365-productos-de-dietetica",
-    "2059806-alimentacion/5000364-productos-ecologicos",
-    "2059806-alimentacion/2060056-salsas-y-especias",
-    "2059806-alimentacion/2059818-yogures",
-    "2059806-alimentacion/4000017-comida-internacional"
-]
 
 # --- GADIS ---
 GADIS_API_SEARCH = "https://catalog.gadisline.com/api/v3/catalog/products/search"
@@ -59,5 +45,4 @@ GADIS_HEADERS = {
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-site",
 }
-# Solo el ID necesario
 GADIS_CATEGORIES = ["8a98965c-e5d7-44b2-9b22-1f9a6521d916"]
