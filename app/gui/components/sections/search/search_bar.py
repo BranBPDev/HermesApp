@@ -1,5 +1,5 @@
 import tkinter as tk
-from app.gui.components.shared.visual_elements import CButton, CInput
+from app.gui.components.widgets.visual_elements import CButton, CInput
 from app.gui.styles.styles import COLOR_BG_DARK
 
 class SearchBar(tk.Frame):

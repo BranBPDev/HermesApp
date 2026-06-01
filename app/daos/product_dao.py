@@ -44,7 +44,7 @@ class ProductDAO:
                     nombre = p.get('nombre', 'Sin nombre')
                     try:
                         precio = float(p.get('precio', 0.0))
-                        p_norm = float(p.get('price_norm', 0.0))
+                        p_norm = float(p.get('precio_norm', 0.0))
                         qty = float(p.get('cantidad', 0.0))
                     except (TypeError, ValueError):
                         precio, p_norm, qty = 0.0, 0.0, 0.0
@@ -58,7 +58,7 @@ class ProductDAO:
                         p_norm, 
                         qty, 
                         p.get('tipo_unidad', 'ud'), 
-                        p.get('image_url', ''), 
+                        p.get('imagen_url', ''), # CORREGIDO: ahora busca 'imagen_url'
                         today_str
                     )
                 data_list = list(unique_prods.values())

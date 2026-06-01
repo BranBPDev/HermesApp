@@ -1,6 +1,7 @@
 import threading
 from app.managers.gui_manager import GUIManager
 from app.managers.cart_manager import CartManager
+from app.managers.rating_manager import RatingManager # Import
 from app.utils.logger_util import HermesLogger
 from app.utils.paths_util import SESSION_JSON
 from app.utils.json_util import read_json_local
@@ -14,6 +15,7 @@ class AppManager:
         self.gui = GUIManager(self)
         self.auth = None
         self.cart_manager = CartManager()
+        self.rating_manager = RatingManager() # Init
 
     def start(self):
         try:
@@ -32,9 +34,7 @@ class AppManager:
         self.gui.start_loop()
 
     def _try_autologin(self):
-
         if not SESSION_JSON.exists(): return False
-        
         try:
             data = read_json_local(SESSION_JSON)
             from app.managers.auth_manager import AuthManager
@@ -47,7 +47,6 @@ class AppManager:
 
     def show_login(self):
         from app.managers.auth_manager import AuthManager
-
         if not self.auth: self.auth = AuthManager()
         self.gui.show_auth(self.auth, self.show_main)
 
@@ -55,12 +54,22 @@ class AppManager:
         self.show_view("search")
 
     def show_view(self, view_name):
-        self.gui.show_view(view_name, self.auth, self._handle_add_to_cart)
+        self.gui.show_view(view_name, self.auth, self._handle_add_to_cart, self.show_product_detail)
+
+    def show_product_detail(self, product):
+        def on_rate_callback(p_id, rating):
+            if self.auth and self.auth.current_user_id:
+                success = self.rating_manager.set_rating(self.auth.current_user_id, p_id, rating)
+                if success: self.log.info(f"Valoración exitosa: {rating} para {p_id}")
+            else:
+                self.log.warning("Usuario no logueado, no se puede valorar")
+        
+        self.gui.show_product_detail(product, on_back=self.show_main, on_rate=on_rate_callback)
 
     def _handle_add_to_cart(self, product):
-        if self.auth and self.auth.user_id:
-            self.cart_manager.add_to_cart(self.auth.user_id, product['id'])
-            self.log.info(f"DB: Añadido {product['name']} al usuario {self.auth.user_id}")
+        if self.auth and self.auth.current_user_id:
+            self.cart_manager.add_to_cart(self.auth.current_user_id, product['id'])
+            self.log.info(f"DB: Añadido {product['name']} al usuario {self.auth.current_user_id}")
 
     def logout(self):
         if SESSION_JSON.exists():

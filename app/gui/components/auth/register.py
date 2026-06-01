@@ -1,5 +1,5 @@
 import tkinter as tk
-from app.gui.components.shared.visual_elements import CButton, CInput, CBadge
+from app.gui.components.widgets.visual_elements import CButton, CInput, CBadge
 from app.gui.styles.styles import (
     COLOR_BG_SIDE, COLOR_PRIMARY, COLOR_TEXT_MAIN, COLOR_TEXT_DIM, 
     COLOR_ERROR, FONT_TITLE, FONT_CB, FONT_ERROR, INPUT_W, Y_OFF

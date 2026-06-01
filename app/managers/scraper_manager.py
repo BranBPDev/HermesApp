@@ -37,27 +37,30 @@ def _execute_scraper(name):
         seen_names = set()
 
         for item in raw_data:
-            nombre = item.get('name', item.get('nombre', '')).strip()
+            # CORRECCIÓN: Accedemos a las claves 'nombre' y 'precio' que entrega BaseScraper
+            nombre = item.get('nombre', '').strip()
+            raw_price = item.get('precio', 0.0)
+            
             if not nombre or nombre in seen_names:
                 continue
             
             # Recogemos la unidad que traiga el scraper
-            raw_unit = item.get('unit_type') or item.get('tipo_unidad')
+            raw_unit = item.get('tipo_unidad', 'ud')
             
             # Llamada al refactorer: Cálculo primero, etiqueta al final
             p_norm, qty, unit = refactorer.get_normalized_data(
                 nombre, 
-                item.get('price', 0), 
+                raw_price, 
                 unit_type_raw=raw_unit
             )
             
             final_products.append({
                 'nombre': nombre,
-                'precio': item.get('price', 0.0),
+                'precio': raw_price,
                 'precio_norm': p_norm,
                 'cantidad': qty,
                 'tipo_unidad': unit,
-                'imagen_url': item.get('image_url', ''),
+                'imagen_url': item.get('imagen', ''), # 'imagen' es la clave generada por BaseScraper
                 'fecha': time.strftime("%Y-%m-%d")
             })
             seen_names.add(nombre)

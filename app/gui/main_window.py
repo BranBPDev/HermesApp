@@ -1,4 +1,5 @@
 import tkinter as tk
+import os
 from PIL import Image, ImageTk
 from app.gui.styles.styles import COLOR_BG_DARK
 from app.utils.paths_util import LOGO_ICO, LOGO_PNG
@@ -14,6 +15,9 @@ class MainWindow(tk.Tk):
         self.title("HermesApp")
         self.configure(bg=COLOR_BG_DARK)
         self.active_instances = []
+        
+        # Arreglo: Capturar el cierre de la ventana
+        self.protocol("WM_DELETE_WINDOW", self._on_closing)
 
         # --- CARGA ÚNICA Y OPTIMIZADA DEL LOGO PNG ---
         self.shared_logo_img = None
@@ -37,6 +41,10 @@ class MainWindow(tk.Tk):
         
         # Vincular el evento de redimensión para actualizar el logo
         self.bind("<Configure>", self._on_resize)
+
+    def _on_closing(self):
+        self.destroy()
+        os._exit(0)
 
     def reset_layout(self):
         log.debug("Reset de layout...")
