@@ -10,7 +10,7 @@ from app.utils.image_util import ImageLoader
 
 class ProductList(tk.Frame):
     def __init__(self, master, get_items_func, on_action=None, on_select=None, 
-                 empty_text="No hay productos", show_action_btn=True, pm_ref=None, action_icon="+", **kwargs):
+                 empty_text="No hay productos", show_action_btn=True, pm_ref=None, action_icon="+", initial_page=0, **kwargs):
         super().__init__(master, bg=COLOR_BG_DARK)
         self.get_items_func = get_items_func
         self.on_action = on_action
@@ -21,7 +21,7 @@ class ProductList(tk.Frame):
         self.action_icon = action_icon
         self._img_refs = [] 
         
-        self.current_page = 0
+        self.current_page = initial_page
         self.total_pages = 1
         
         self.canvas = tk.Canvas(self, bg=COLOR_BG_DARK, highlightthickness=0)

@@ -1,7 +1,7 @@
 import threading
 from app.managers.gui_manager import GUIManager
 from app.managers.cart_manager import CartManager
-from app.managers.rating_manager import RatingManager # Import
+from app.managers.rating_manager import RatingManager
 from app.utils.logger_util import HermesLogger
 from app.utils.paths_util import SESSION_JSON
 from app.utils.json_util import read_json_local
@@ -15,7 +15,8 @@ class AppManager:
         self.gui = GUIManager(self)
         self.auth = None
         self.cart_manager = CartManager()
-        self.rating_manager = RatingManager() # Init
+        self.rating_manager = RatingManager()
+        self.last_state = {'view': 'search', 'page': 0, 'query': ''}
 
     def start(self):
         try:
@@ -51,12 +52,23 @@ class AppManager:
         self.gui.show_auth(self.auth, self.show_main)
 
     def show_main(self):
-        self.show_view("search")
+        self.show_view("search", 0, "")
 
-    def show_view(self, view_name):
-        self.gui.show_view(view_name, self.auth, self._handle_add_to_cart, self.show_product_detail)
+    def show_view(self, view_name, page=0, query=''):
+        self.last_state = {'view': view_name, 'page': page, 'query': query}
+        self.gui.show_view(view_name, self.auth, self._handle_add_to_cart, self.show_product_detail, page, query)
 
     def show_product_detail(self, product):
+        # Intentar capturar la página y query actual antes de cambiar de vista
+        try:
+            if self.gui.root.active_instances:
+                current_section = self.gui.root.active_instances[-1]
+                if hasattr(current_section, 'get_current_page'):
+                    self.last_state['page'] = current_section.get_current_page()
+                if hasattr(current_section, 'get_query'): # Capturar query si existe
+                    self.last_state['query'] = current_section.get_query()
+        except: pass
+
         def on_rate_callback(p_id, rating):
             if self.auth and self.auth.current_user_id:
                 success = self.rating_manager.set_rating(self.auth.current_user_id, p_id, rating)
@@ -64,7 +76,7 @@ class AppManager:
             else:
                 self.log.warning("Usuario no logueado, no se puede valorar")
         
-        self.gui.show_product_detail(product, on_back=self.show_main, on_rate=on_rate_callback)
+        self.gui.show_product_detail(product, on_back=lambda: self.show_view(self.last_state['view'], self.last_state['page'], self.last_state['query']), on_rate=on_rate_callback)
 
     def _handle_add_to_cart(self, product):
         if self.auth and self.auth.current_user_id:

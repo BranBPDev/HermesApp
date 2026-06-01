@@ -33,7 +33,7 @@ class GUIManager:
              'args': {'auth_manager': auth_manager, 'on_success': on_login_success}}
         ])
 
-    def show_view(self, view_name, auth_manager, on_add_func, on_select_func):
+    def show_view(self, view_name, auth_manager, on_add_func, on_select_func, page=0, query=''):
         user = auth_manager.username if auth_manager else "Usuario"
         
         if view_name == "search":
@@ -42,7 +42,7 @@ class GUIManager:
                 {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1, 'args': {'current_view': 'search'}},
                 {'class': UserHeader, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
                 {'class': SearchSection, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88, 
-                 'args': {'on_add': on_add_func, 'on_select': on_select_func}}
+                 'args': {'on_add': on_add_func, 'on_select': on_select_func, 'page': page, 'initial_query': query}}
             ]
         elif view_name == "cart":
             from app.gui.components.sections.cart.cart_section import CartSection
@@ -50,7 +50,7 @@ class GUIManager:
                 {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1, 'args': {'current_view': 'cart'}},
                 {'class': UserHeader, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
                 {'class': CartSection, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88,
-                 'args': {'on_select': on_select_func}}
+                 'args': {'on_select': on_select_func, 'page': page}}
             ]
         
         self.root.set_layout(layout)

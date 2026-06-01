@@ -18,6 +18,14 @@ class SearchBar(tk.Frame):
         self.canvas.bind("<Configure>", lambda e: self.draw())
         self.master.winfo_toplevel().bind("<Return>", lambda e: self._trigger_search())
 
+    def set_query(self, text):
+        # Asumiendo que CInput permite establecer el texto
+        if hasattr(self.inp, 'set'):
+            self.inp.set(text)
+        elif hasattr(self.inp, 'entry'):
+            self.inp.entry.delete(0, 'end')
+            self.inp.entry.insert(0, text)
+
     def _trigger_search(self):
         query = self.inp.get()
         if query:
