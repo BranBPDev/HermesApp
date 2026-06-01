@@ -31,9 +31,16 @@ class CartDAO:
 
     def get_user_cart(self, user_id):
         sql = """
-            SELECT p.id as product_id, p.name, p.price, p.price_norm, 
-                   c.quantity, (p.price * c.quantity) as subtotal, s.name as store_name,
-                   p.image_url
+            SELECT p.id AS product_id, 
+                p.name, 
+                p.price, 
+                p.price_norm, 
+                p.unit_type, 
+                p.image_url, 
+                p.avg_rating,
+                c.quantity, 
+                (p.price * c.quantity) AS subtotal, 
+                s.name AS store_name
             FROM cart_item c
             JOIN product p ON c.product_id = p.id
             JOIN store s ON p.store_id = s.id
