@@ -62,4 +62,4 @@ class Register(tk.Frame):
         if not u or not e or not p: self.error_message = "Campos obligatorios"; self._render(); return
         success, message = self.auth.register(u, e, p, remember=self.remember_me.get()) 
         if success: self.on_success()
-        else: self.error_message = message; self._render() 
+        else: self.error_message = message; self._render()
