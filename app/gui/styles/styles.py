@@ -17,6 +17,9 @@ COLOR_BADGE_BG = "#252525"
 COLOR_ERROR = "#FF5555"
 COLOR_ONLINE = "#2ECC71"        # Indicador de estado
 
+# NUEVOS COLORES PARA BOTONES
+COLOR_BTN_BG_INACTIVE = "#333333"
+
 # FUENTES
 FONT_TITLE = ("Roboto", 22, "bold")
 FONT_BRAND = ("Roboto", 24, "bold")

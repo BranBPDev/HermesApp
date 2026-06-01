@@ -15,19 +15,17 @@ class CartManager:
         self.log.info(f"Resultado DAO add_to_cart: {res}")
         return res
 
+    def remove_from_cart(self, user_id, product_id):
+        self.log.debug(f"Intentando eliminar: User={user_id}, Prod={product_id}")
+        if not user_id: return False
+        return self.dao.remove_from_cart(user_id, product_id)
+
     def get_items(self, user_id):
-        self.log.debug(f"TRAZA: get_items solicitado para user_id: {user_id} (Tipo: {type(user_id)})")
+        self.log.debug(f"TRAZA: get_items solicitado para user_id: {user_id}")
         if user_id is None:
-            self.log.error("TRAZA: user_id es NONE. La consulta al carrito fallará inevitablemente.")
+            self.log.error("TRAZA: user_id es NONE.")
             return []
-        
         items = self.dao.get_user_cart(user_id)
-        
-        if not items:
-            self.log.info(f"TRAZA: El DAO retornó una lista VACÍA para el usuario {user_id}")
-        else:
-            self.log.info(f"TRAZA: Se recuperaron {len(items)} items del carrito.")
-            self.log.debug(f"TRAZA: Primer item recuperado (si existe): {items[0] if items else 'N/A'}")
         return items
 
     def get_suggestions(self, user_id):
