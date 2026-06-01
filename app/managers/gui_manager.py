@@ -79,11 +79,25 @@ class GUIManager:
                 {'class': CartSection, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88,
                  'args': {'on_select': self.show_product_detail, 'page': page}}
             ]
+        elif view_name == "featured":
+            from app.gui.components.sections.featured.featured_section import FeaturedSection
+            layout = [
+                {'class': Sidebar, 'relx': 0, 'relw': 0.07, 'relh': 1, 'args': {'current_view': 'featured', 'app': self}},
+                {'class': UserHeader, 'relx': 0.07, 'relw': 0.93, 'relh': 0.12, 'args': {'username': user}},
+                {'class': FeaturedSection, 'relx': 0.07, 'rely': 0.12, 'relw': 0.93, 'relh': 0.88,
+                 'args': {'on_add': self._handle_add_to_cart, 'on_select': self.show_product_detail, 'page': page}}
+            ]
         self.root.set_layout(layout)
 
     def show_product_detail(self, product):
         from app.gui.components.common.product_detail import ProductDetail
         
+        # EXTRACCIÓN SEGURA: Previene crashes si venimos de la vista Cart
+        p_id = product.get("id") or product.get("product_id")
+
+        if self.auth.current_user_id and p_id is not None:
+            product["user_rating"] = self.rating.get_user_rating(self.auth.current_user_id, p_id)
+
         # Capturamos el estado real actual antes de cambiar de vista
         current_page = self.last_state['page']
         current_query = self.last_state['query']
@@ -106,8 +120,9 @@ class GUIManager:
 
     def _handle_add_to_cart(self, product):
         if self.auth.current_user_id:
-            self.cart.add_to_cart(self.auth.current_user_id, product['id'])
+            p_id = product.get("id") or product.get("product_id")
+            self.cart.add_to_cart(self.auth.current_user_id, p_id)
 
     def _handle_rate(self, p_id, rating):
-        if self.auth.current_user_id:
+        if self.auth.current_user_id and p_id is not None:
             self.rating.set_rating(self.auth.current_user_id, p_id, rating)

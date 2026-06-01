@@ -1,10 +1,12 @@
 import psycopg2.extras
+from app.daos.tag_dao import TagDAO
 from app.managers.db_manager import DBManager
 from app.utils.dates_util import get_current_date_str
 
 class ProductDAO:
     def __init__(self):
         self.db = DBManager()
+        self.tag_dao = TagDAO()
 
     def upsert_batch(self, store_name: str, products: list):
         store_res = self.db.execute_query("SELECT id FROM store WHERE name = %s", (store_name.lower(),), fetch=True)
@@ -17,7 +19,7 @@ class ProductDAO:
         today_str = get_current_date_str()
 
         query = """
-            INSERT INTO product (store_id, name, tag, price, price_norm, quantity, unit_type, image_url, last_update)
+            INSERT INTO product (store_id, name, price, price_norm, quantity, unit_type, image_url, last_update)
             VALUES %s
             ON CONFLICT (name, store_id) 
             DO UPDATE SET 
@@ -48,16 +50,14 @@ class ProductDAO:
                     except (TypeError, ValueError):
                         precio, p_norm, qty = 0.0, 0.0, 0.0
 
-                    # TAG fijado a _temp como pediste para nuevos registros
                     unique_prods[nombre] = (
                         store_id, 
                         nombre, 
-                        "_temp", 
                         precio, 
                         p_norm, 
                         qty, 
                         p.get('tipo_unidad', 'ud'), 
-                        p.get('imagen_url', ''), # CORREGIDO: ahora busca 'imagen_url'
+                        p.get('imagen_url', ''),
                         today_str
                     )
                 data_list = list(unique_prods.values())
@@ -70,12 +70,24 @@ class ProductDAO:
         finally:
             if conn: self.db.release_connection(conn)
 
-    def search_by_tag(self, query_tag: str, order_by: str = "p.price_norm ASC"):
-        sql = f"""
-            SELECT p.*, s.name as store_name
+    def search_by_tag(self, query_tag: str):
+        sql = """
+            SELECT p.*, s.name as store_name 
             FROM product p
             JOIN store s ON p.store_id = s.id
-            WHERE p.tag ILIKE %s
-            ORDER BY {order_by} LIMIT 150
+            JOIN tag t ON p.tag_id = t.id
+            WHERE t.name ILIKE %s
+            ORDER BY p.avg_rating DESC NULLS LAST, p.price_norm ASC 
+            LIMIT 50
         """
         return self.db.execute_query(sql, (f"%{query_tag}%",), fetch=True)
+
+    def get_top_rated(self, limit=20):
+        sql = """
+            SELECT p.*, s.name as store_name 
+            FROM product p
+            JOIN store s ON p.store_id = s.id
+            ORDER BY p.avg_rating DESC NULLS LAST
+            LIMIT %s
+        """
+        return self.db.execute_query(sql, (limit,), fetch=True)

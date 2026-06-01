@@ -4,6 +4,16 @@ class RatingDAO:
     def __init__(self):
         self.db = DBManager()
 
+    def get_user_rating(self, user_id, product_id):
+        query = "SELECT rating FROM product_rating WHERE user_id = %s AND product_id = %s"
+        try:
+            result = self.db.execute_query(query, (user_id, product_id), fetch=True)
+            return result[0]['rating'] if result else 0
+        except Exception as e:
+            from app.utils.logger_util import HermesLogger
+            HermesLogger.get_logger("RATING_DAO").error(f"Error al obtener valoración: {e}")
+            return 0
+
     def save_rating(self, user_id, product_id, rating):
         query = """
             INSERT INTO product_rating (user_id, product_id, rating, created_at)

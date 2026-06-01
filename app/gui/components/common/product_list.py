@@ -10,14 +10,13 @@ from app.utils.image_util import ImageLoader
 
 class ProductList(tk.Frame):
     def __init__(self, master, get_items_func, on_action=None, on_select=None, 
-                 empty_text="No hay productos", show_action_btn=True, pm_ref=None, action_icon="+", initial_page=0, **kwargs):
+                 empty_text="No hay productos", show_action_btn=True, action_icon="+", initial_page=0, **kwargs):
         super().__init__(master, bg=COLOR_BG_DARK)
         self.get_items_func = get_items_func
         self.on_action = on_action
         self.on_select = on_select 
         self.empty_text = empty_text
         self.show_action_btn = show_action_btn
-        self.pm = pm_ref 
         self.action_icon = action_icon
         self._img_refs = [] 
         
@@ -49,7 +48,20 @@ class ProductList(tk.Frame):
         w, h = self._last_w, self._last_h
         if w <= 1: return
 
-        products = self.get_items_func(h)
+        # Cálculo dinámico del tamaño de página
+        page_size = max(1, int((h - 120) // 65))
+        
+        # Obtener datos usando la función externa (pasa página y tamaño)
+        products, total_count = self.get_items_func(self.current_page, page_size)
+        
+        # Calcular total de páginas
+        self.total_pages = max(1, (total_count + page_size - 1) // page_size)
+        
+        # Corregir página si se sale de rango
+        if self.current_page >= self.total_pages:
+            self.current_page = max(0, self.total_pages - 1)
+            # Re-obtener si cambiamos de página
+            products, _ = self.get_items_func(self.current_page, page_size)
         
         if not products:
             self.canvas.create_text(w/2, h/2, text=self.empty_text, 
@@ -86,7 +98,9 @@ class ProductList(tk.Frame):
             self._handle_image(p.get('image_url') or p.get('img_url'), col_img - 20, y - 20)
             
             full_name = p.get('name', 'Producto sin nombre')
-            name = (full_name[:20] + "..") if len(full_name) > 20 else full_name
+            name = (full_name[:15] + "..") if len(full_name) > 15 else full_name
+            
+            # Unificación de la clave de valoración (avg_rating)
             rating = p.get('avg_rating')
             val_text = f"{float(rating):.1f}" if rating is not None else "-"
             
@@ -144,36 +158,33 @@ class ProductList(tk.Frame):
             except: pass
 
     def _draw_pagination(self, w, h):
-        curr = (self.pm.current_page + 1) if self.pm else (self.current_page + 1)
-        has_prev = self.pm.current_page > 0 if self.pm else (self.current_page > 0)
-        has_next = self.pm.has_more() if self.pm else (self.current_page < self.total_pages - 1)
+        curr = self.current_page + 1
+        has_prev = self.current_page > 0
+        has_next = self.current_page < self.total_pages - 1
             
         y_pos, x_center = h - 30, w / 2
         
-        def draw_page_btn(x, text, active, delta=None):
+        def draw_page_btn(x, text, delta):
             tag = f"page_btn_{text}"
             bg_tag, txt_tag = f"{tag}_bg", f"{tag}_txt"
-            color = COLOR_PRIMARY if active else COLOR_BTN_BG_INACTIVE
             
-            ShapeDrawer.rounded_rect(self.canvas, x-15, y_pos-15, 30, 30, 15, fill=color, tags=(tag, bg_tag))
+            ShapeDrawer.rounded_rect(self.canvas, x-15, y_pos-15, 30, 30, 15, fill=COLOR_PRIMARY, tags=(tag, bg_tag))
             self.canvas.create_text(x, y_pos, text=text, fill="white", font=FONT_INPUT, tags=(tag, txt_tag))
             
-            if delta is not None and active:
-                self.canvas.tag_bind(tag, "<Enter>", lambda e, t=bg_tag: self.canvas.itemconfig(t, fill=COLOR_PRIMARY_HOVER))
-                self.canvas.tag_bind(tag, "<Leave>", lambda e, t=bg_tag: self.canvas.itemconfig(t, fill=COLOR_PRIMARY))
-                self.canvas.tag_bind(tag, "<Button-1>", lambda e, t=bg_tag: self.canvas.itemconfig(t, fill=COLOR_PRIMARY_ACTIVE))
-                self.canvas.tag_bind(tag, "<ButtonRelease-1>", lambda e, t=bg_tag, d=delta: [self.canvas.itemconfig(t, fill=COLOR_PRIMARY_HOVER), self._change_page(d)])
+            self.canvas.tag_bind(tag, "<Enter>", lambda e, t=bg_tag: self.canvas.itemconfig(t, fill=COLOR_PRIMARY_HOVER))
+            self.canvas.tag_bind(tag, "<Leave>", lambda e, t=bg_tag: self.canvas.itemconfig(t, fill=COLOR_PRIMARY))
+            self.canvas.tag_bind(tag, "<Button-1>", lambda e, t=bg_tag: self.canvas.itemconfig(t, fill=COLOR_PRIMARY_ACTIVE))
+            self.canvas.tag_bind(tag, "<ButtonRelease-1>", lambda e, t=bg_tag, d=delta: [self.canvas.itemconfig(t, fill=COLOR_PRIMARY_HOVER), self._change_page(d)])
 
-        draw_page_btn(x_center - 50, "<", has_prev, -1)
+        if has_prev:
+            draw_page_btn(x_center - 50, "<", -1)
+            
         ShapeDrawer.rounded_rect(self.canvas, x_center-20, y_pos-15, 40, 30, 8, fill=COLOR_BADGE_BG)
         self.canvas.create_text(x_center, y_pos, text=str(curr), fill=COLOR_PRIMARY, font=FONT_INPUT)
-        draw_page_btn(x_center + 50, ">", has_next, 1)
+        
+        if has_next:
+            draw_page_btn(x_center + 50, ">", 1)
 
     def _change_page(self, delta):
-        if self.pm:
-            if (delta == -1 and self.pm.current_page <= 0) or (delta == 1 and not self.pm.has_more()): return
-            self.pm.current_page += delta
-        else:
-            if (delta == -1 and self.current_page <= 0) or (delta == 1 and self.current_page >= self.total_pages - 1): return
-            self.current_page += delta
+        self.current_page += delta
         self.refresh()

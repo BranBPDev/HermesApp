@@ -9,12 +9,19 @@ class ProductManager:
         self.current_page = 0
         self.page_size = 15 
 
-    def search(self, query, order_by="p.price_norm ASC"):
+    def search(self, query):
         self.log.info(f"Iniciando búsqueda con query: '{query}'")
         self.current_page = 0
-        res = self.dao.search_by_tag(query, order_by)
+        res = self.dao.search_by_tag(query)
         self.all_results = res if res else [] 
         self.log.info(f"Búsqueda finalizada. Encontrados: {len(self.all_results)} resultados.")
+        return self.get_current_page_items()
+
+    def load_featured(self):
+        self.log.info("Cargando productos destacados.")
+        self.current_page = 0
+        res = self.dao.get_top_rated(20)
+        self.all_results = res if res else []
         return self.get_current_page_items()
 
     def get_next_page(self):

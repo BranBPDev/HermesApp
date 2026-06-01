@@ -45,7 +45,13 @@ class Sidebar(tk.Frame):
             self.canvas.create_image(0, 0, image=self.sidebar_logo_img, anchor="center", tags="sidebar_logo")
 
         # Reajuste de posiciones Y fijas hacia abajo para dar espacio limpio al logotipo (Y=45)
-        btn_defs = [("🔍", "search", 120), ("🛒", "cart", 180), ("⏻", "logout", -40)]
+        # Se añade "featured" con el icono de estrella
+        btn_defs = [
+            ("🔍", "search", 120), 
+            ("⭐", "featured", 180),
+            ("🛒", "cart", 240), 
+            ("⏻", "logout", -40)
+        ]
         
         for icon, tag, y_pos in btn_defs:
             
