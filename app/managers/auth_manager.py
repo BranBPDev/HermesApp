@@ -1,8 +1,8 @@
 from app.daos.user_dao import UserDAO
 from app.utils.logger_util import HermesLogger
 from app.utils.paths_util import SESSION_JSON
-from app.utils.json_util import save_json
-from app.utils.crypto_util import encode_to_base64
+from app.utils.json_util import save_json, read_json_local
+from app.utils.crypto_util import encode_to_base64, decode_from_base64
 
 class AuthManager:
     _instance = None
@@ -16,12 +16,20 @@ class AuthManager:
             cls._instance.username = None
         return cls._instance
 
+    def attempt_autologin(self):
+        """Lógica delegada al AuthManager: intentar recuperar sesión."""
+        if not SESSION_JSON.exists(): return False
+        try:
+            data = read_json_local(SESSION_JSON)
+            user = decode_from_base64(data["u"])
+            password = decode_from_base64(data["p"])
+            success, _ = self.login(user, password)
+            return success
+        except: return False
+
     def _save_session(self, identifier, password):
         try:
-            data = {
-                "u": encode_to_base64(identifier),
-                "p": encode_to_base64(password)
-            }
+            data = {"u": encode_to_base64(identifier), "p": encode_to_base64(password)}
             save_json(SESSION_JSON, data)
         except Exception as e:
             self.log.error(f"Error guardando sesión: {e}")
@@ -61,5 +69,8 @@ class AuthManager:
         return False, "No se pudo crear el usuario"
 
     def logout(self):
+        if SESSION_JSON.exists():
+            try: SESSION_JSON.unlink()
+            except: pass
         self.current_user_id = None
         self.username = None
