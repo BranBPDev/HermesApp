@@ -52,10 +52,7 @@ class MercadonaScraper(BaseScraper):
                     self.add_product(
                         name=p.get("display_name"), 
                         price=i.get("unit_price"), 
-                        image_url=p.get("thumbnail"), 
-                        quantity=i.get("unit_size"),
-                        reference_price=i.get("reference_price"),
-                        unit_type=i.get("reference_format")
+                        image_url=p.get("thumbnail")
                     )
         
         return self.products

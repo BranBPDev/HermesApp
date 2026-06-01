@@ -19,20 +19,14 @@ class ProductDAO:
         today_str = get_current_date_str()
 
         query = """
-            INSERT INTO product (store_id, name, price, price_norm, quantity, unit_type, image_url, last_update)
+            INSERT INTO product (store_id, name, price, image_url, last_update)
             VALUES %s
             ON CONFLICT (name, store_id) 
             DO UPDATE SET 
                 price = EXCLUDED.price,
-                price_norm = EXCLUDED.price_norm,
-                quantity = EXCLUDED.quantity,
-                unit_type = EXCLUDED.unit_type,
                 image_url = EXCLUDED.image_url,
                 last_update = EXCLUDED.last_update
             WHERE (product.price IS DISTINCT FROM EXCLUDED.price OR 
-                   product.price_norm IS DISTINCT FROM EXCLUDED.price_norm OR
-                   product.quantity IS DISTINCT FROM EXCLUDED.quantity OR
-                   product.unit_type IS DISTINCT FROM EXCLUDED.unit_type OR
                    product.image_url IS DISTINCT FROM EXCLUDED.image_url);
         """
         
@@ -45,18 +39,13 @@ class ProductDAO:
                     nombre = p.get('nombre', 'Sin nombre')
                     try:
                         precio = float(p.get('precio', 0.0))
-                        p_norm = float(p.get('precio_norm', 0.0))
-                        qty = float(p.get('cantidad', 0.0))
                     except (TypeError, ValueError):
-                        precio, p_norm, qty = 0.0, 0.0, 0.0
+                        precio = 0.0
 
                     unique_prods[nombre] = (
                         store_id, 
                         nombre, 
                         precio, 
-                        p_norm, 
-                        qty, 
-                        p.get('tipo_unidad', 'ud'), 
                         p.get('imagen_url', ''),
                         today_str
                     )

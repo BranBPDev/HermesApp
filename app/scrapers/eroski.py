@@ -35,12 +35,10 @@ class EroskiScraper(BaseScraper):
                                 name = product_data.get("item_name")
                                 price = product_data.get("price")
                                 
-                                # Pasamos los datos crudos, el Manager se encargará de refactorizar
+                                # Pasamos los datos mínimos necesarios
                                 self.add_product(
                                     name=name,
                                     price=price,
-                                    quantity=1.0, 
-                                    unit_type="ud",
                                     image_url=f"https://supermercado.eroski.es/images/{product_data.get('item_id')}.jpg"
                                 )
                             except Exception:

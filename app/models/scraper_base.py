@@ -29,15 +29,14 @@ class BaseScraper(ABC):
             HermesLogger.get_logger(self.name).error(f"Error JSON en {url}: {e}")
             return None
 
-    def add_product(self, name, price, **kwargs):
+    def _clean_name(self, name: str) -> str:
+        # Limpieza básica: quitar espacios extra y capitalizar
+        return str(name).strip()
+
+    def add_product(self, name, price, image_url=None):
         if name and price is not None:
-            # Normalización básica de datos al insertar
-            ref_price = kwargs.get('reference_price')
             self.products.append({
-                "nombre": str(name).strip(),
+                "nombre": self._clean_name(name),
                 "precio": float(price),
-                "precio_referencia": float(ref_price) if ref_price else None,
-                "cantidad": kwargs.get('quantity'),
-                "tipo_unidad": kwargs.get('unit_type'),
-                "imagen": kwargs.get('image_url')
+                "imagen_url": image_url or ""
             })

@@ -6,7 +6,6 @@ from app.scrapers.mercadona import MercadonaScraper
 from app.scrapers.eroski import EroskiScraper
 from app.scrapers.gadis import GadisScraper
 from app.utils.json_util import save_json
-from app.utils.refactor_util import HermesRefactorer
 from app.daos.product_dao import ProductDAO
 
 log = HermesLogger.get_logger("SCRAPER_MANAGER")
@@ -31,36 +30,20 @@ def _execute_scraper(name):
         if not raw_data:
             return f"⚠️ {name.upper()}: Sin datos"
 
-        # 2. Refactorización obligatoria
-        refactorer = HermesRefactorer()
+        # 2. Procesamiento ligero
         final_products = []
         seen_names = set()
 
         for item in raw_data:
-            # CORRECCIÓN: Accedemos a las claves 'nombre' y 'precio' que entrega BaseScraper
             nombre = item.get('nombre', '').strip()
-            raw_price = item.get('precio', 0.0)
             
             if not nombre or nombre in seen_names:
                 continue
             
-            # Recogemos la unidad que traiga el scraper
-            raw_unit = item.get('tipo_unidad', 'ud')
-            
-            # Llamada al refactorer: Cálculo primero, etiqueta al final
-            p_norm, qty, unit = refactorer.get_normalized_data(
-                nombre, 
-                raw_price, 
-                unit_type_raw=raw_unit
-            )
-            
             final_products.append({
                 'nombre': nombre,
-                'precio': raw_price,
-                'precio_norm': p_norm,
-                'cantidad': qty,
-                'tipo_unidad': unit,
-                'imagen_url': item.get('imagen', ''), # 'imagen' es la clave generada por BaseScraper
+                'precio': item.get('precio', 0.0),
+                'imagen_url': item.get('imagen_url', ''),
                 'fecha': time.strftime("%Y-%m-%d")
             })
             seen_names.add(nombre)
