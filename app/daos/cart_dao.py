@@ -1,10 +1,8 @@
 from app.managers.db_manager import DBManager
-from app.utils.logger_util import HermesLogger
 
 class CartDAO:
     def __init__(self):
         self.db = DBManager()
-        self.log = HermesLogger.get_logger("CART_MANAGER")
 
     def add_to_cart(self, user_id, product_id, quantity=1):
         sql = """
@@ -17,7 +15,8 @@ class CartDAO:
             self.db.execute_query(sql, (user_id, product_id, quantity), fetch=False)
             return True
         except Exception as e:
-            self.log.error(f"Error SQL en add_to_cart: {e}")
+            from app.utils.logger_util import HermesLogger
+            HermesLogger.get_logger("CART_MANAGER").error(f"Error SQL en add_to_cart: {e}")
             return False
 
     def remove_from_cart(self, user_id, product_id):
@@ -26,7 +25,8 @@ class CartDAO:
             self.db.execute_query(sql, (user_id, product_id), fetch=False)
             return True
         except Exception as e:
-            self.log.error(f"Error SQL en remove_from_cart: {e}")
+            from app.utils.logger_util import HermesLogger
+            HermesLogger.get_logger("CART_MANAGER").error(f"Error SQL en remove_from_cart: {e}")
             return False
 
     def get_user_cart(self, user_id):
@@ -41,11 +41,11 @@ class CartDAO:
             ORDER BY p.name ASC
         """
         try:
-            self.log.debug(f"Ejecutando SQL de carrito para ID: {user_id}")
             res = self.db.execute_query(sql, (user_id,), fetch=True)
             return res if res else []
         except Exception as e:
-            self.log.error(f"ERROR SQL ejecutando get_user_cart: {e}")
+            from app.utils.logger_util import HermesLogger
+            HermesLogger.get_logger("CART_MANAGER").error(f"ERROR SQL ejecutando get_user_cart: {e}")
             return []
 
     def get_savings_suggestions(self, user_id):

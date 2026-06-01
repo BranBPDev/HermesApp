@@ -3,15 +3,11 @@ import os
 from PIL import Image, ImageTk
 from app.gui.styles.styles import COLOR_BG_DARK
 from app.utils.paths_util import LOGO_ICO, LOGO_PNG
-from app.utils.logger_util import HermesLogger
-
-log = HermesLogger.get_logger("MAIN_WINDOW")
 
 class MainWindow(tk.Tk):
     def __init__(self, app_manager):
         super().__init__()
         self.app = app_manager
-        log.debug("Inicializando MainWindow...")
         self.title("HermesApp")
         self.configure(bg=COLOR_BG_DARK)
         self.active_instances = []
@@ -26,9 +22,9 @@ class MainWindow(tk.Tk):
                 self.shared_logo_img = ImageTk.PhotoImage(
                     Image.open(str(LOGO_PNG)).resize((100, 100), Image.Resampling.LANCZOS)
                 )
-                log.info("Logo PNG cargado en memoria correctamente.")
             except Exception as e:
-                log.error(f"Error cargando PNG: {e}")
+                from app.utils.logger_util import HermesLogger
+                HermesLogger.get_logger("MAIN_WINDOW").error(f"Error cargando PNG: {e}")
 
         # --- ICONO DEL SISTEMA (.ICO) ---
         if LOGO_ICO.exists():
@@ -47,7 +43,6 @@ class MainWindow(tk.Tk):
         os._exit(0)
 
     def reset_layout(self):
-        log.debug("Reset de layout...")
         self.unbind("<Return>")
         for widget in self.winfo_children():
             widget.destroy()
@@ -71,7 +66,6 @@ class MainWindow(tk.Tk):
 
         # Dibujo inicial seguro
         self.after(100, self._draw_floating_logo)
-        log.info("Layout aplicado.")
         return self.active_instances
 
     def _on_resize(self, event):
@@ -122,5 +116,6 @@ class MainWindow(tk.Tk):
                     tags="floating_logo"
                 )
         except (AttributeError, tk.TclError) as e:
-            log.error(f"Error al dibujar el logo flotante. {e}", exc_info=True)
+            from app.utils.logger_util import HermesLogger
+            HermesLogger.get_logger("MAIN_WINDOW").error(f"Error al dibujar el logo flotante. {e}", exc_info=True)
             pass

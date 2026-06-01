@@ -70,5 +70,6 @@ class ImageLoader:
 
             callback({'pil': img_resized})
             
-        except Exception:
-            pass
+        except Exception as e:
+            from app.utils.logger_util import HermesLogger
+            HermesLogger.get_logger("IMAGE").error(f"Error en carga de imagen: {e}")

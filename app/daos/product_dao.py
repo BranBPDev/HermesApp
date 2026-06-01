@@ -1,17 +1,16 @@
 import psycopg2.extras
 from app.managers.db_manager import DBManager
-from app.utils.logger_util import HermesLogger
 from app.utils.dates_util import get_current_date_str
 
 class ProductDAO:
     def __init__(self):
-        self.log = HermesLogger.get_logger("PRODUCT_DAO")
         self.db = DBManager()
 
     def upsert_batch(self, store_name: str, products: list):
         store_res = self.db.execute_query("SELECT id FROM store WHERE name = %s", (store_name.lower(),), fetch=True)
         if not store_res: 
-            self.log.error(f"Tienda {store_name} no encontrada")
+            from app.utils.logger_util import HermesLogger
+            HermesLogger.get_logger("PRODUCT_DAO").error(f"Tienda {store_name} no encontrada")
             return
         
         store_id = store_res[0]['id']
@@ -65,7 +64,8 @@ class ProductDAO:
                 psycopg2.extras.execute_values(cur, query, data_list)
             conn.commit()
         except Exception as e:
-            self.log.error(f"Error en upsert_batch: {e}")
+            from app.utils.logger_util import HermesLogger
+            HermesLogger.get_logger("PRODUCT_DAO").error(f"Error en upsert_batch: {e}")
             if conn: conn.rollback()
         finally:
             if conn: self.db.release_connection(conn)

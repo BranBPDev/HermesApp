@@ -8,5 +8,6 @@ def invoke_progress(callback: Optional[ProgressCallback], value: float, message:
     if callback:
         try:
             callback(value, message)
-        except Exception:
-            pass # Los errores de UI no deben romper la lógica de descarga
+        except Exception as e:
+            from app.utils.logger_util import HermesLogger
+            HermesLogger.get_logger("CALLBACK").error(f"Error en callback: {e}")

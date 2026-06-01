@@ -24,7 +24,8 @@ class GadisScraper(BaseScraper):
             response = self._session.post(GADIS_API_SEARCH, params=params, json=payload, timeout=20)
             return response.json() if response.ok else None
         except Exception as e:
-            self.log.error(f"Error en GADIS (Cat: {category_id}, Pág: {page}): {e}")
+            from app.utils.logger_util import HermesLogger
+            HermesLogger.get_logger("GADIS").error(f"Error en GADIS (Cat: {category_id}, Pág: {page}): {e}")
             return None
 
     def _process_category(self, category_id: str):
@@ -62,9 +63,7 @@ class GadisScraper(BaseScraper):
             page += 1
 
     def scrape(self):
-        self.log.info("Iniciando motor GADIS...")
         with ThreadPoolExecutor(max_workers=5) as executor:
             executor.map(self._process_category, GADIS_CATEGORIES)
             
-        self.log.info(f"Gadis completado: {len(self.products)} productos.")
         return self.products

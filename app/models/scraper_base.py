@@ -2,13 +2,11 @@ import requests
 from abc import ABC, abstractmethod
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from app.utils.logger_util import HermesLogger
 
 class BaseScraper(ABC):
     def __init__(self, name: str, headers: dict):
         self.name = name
         self.products = []
-        self.log = HermesLogger.get_logger(name)
         self._session = self._build_session(headers)
 
     def _build_session(self, headers: dict) -> requests.Session:
@@ -27,7 +25,8 @@ class BaseScraper(ABC):
             resp = self._session.get(url, timeout=15, **kwargs)
             return resp.json() if resp.ok else None
         except Exception as e:
-            self.log.error(f"Error JSON en {url}: {e}")
+            from app.utils.logger_util import HermesLogger
+            HermesLogger.get_logger(self.name).error(f"Error JSON en {url}: {e}")
             return None
 
     def add_product(self, name, price, **kwargs):

@@ -14,8 +14,8 @@ class MercadonaScraper(BaseScraper):
             self.session.get("https://tienda.mercadona.es/")
             self.session.get("https://tienda.mercadona.es/manifest.json")
             self.session.get("https://tienda.mercadona.es/locales/es.json")
-        except Exception as e:
-            self.log.warning(f"Error en warmup de Mercadona: {e}")
+        except Exception:
+            pass
 
     def fetch_cat(self, cat_id):
         url = MERCADONA_API_CAT.format(cat_id=cat_id)
@@ -32,7 +32,8 @@ class MercadonaScraper(BaseScraper):
         # 2. Obtener índice
         resp = self.session.get(MERCADONA_API_INDEX)
         if resp.status_code != 200:
-            self.log.error(f"Error {resp.status_code} al acceder al índice de Mercadona")
+            from app.utils.logger_util import HermesLogger
+            HermesLogger.get_logger("MERCADONA").error(f"Error {resp.status_code} al acceder al índice de Mercadona")
             return []
             
         index = resp.json()
@@ -57,5 +58,4 @@ class MercadonaScraper(BaseScraper):
                         unit_type=i.get("reference_format")
                     )
         
-        self.log.info(f"Mercadona finalizado: {len(self.products)} productos")
         return self.products

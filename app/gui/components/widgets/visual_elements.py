@@ -1,5 +1,4 @@
 import tkinter as tk
-from app.utils.logger_util import HermesLogger
 from app.gui.styles.styles import (
     COLOR_PRIMARY, COLOR_PRIMARY_HOVER, COLOR_PRIMARY_ACTIVE, COLOR_TEXT_MAIN, 
     COLOR_TEXT_INACTIVE, COLOR_INPUT_BG, COLOR_BADGE_BG, FONT_LABEL, FONT_INPUT, 
@@ -68,7 +67,6 @@ class CButton:
     def __init__(self, canvas, text, command):
         self.canvas, self.text, self.command = canvas, text, command
         self.rect_id = None
-        self.log = HermesLogger.get_logger("CBUTTON")
 
     def draw(self, x, y, w=BTN_W, h=BTN_H):
         tag = f"btn_{id(self)}"
@@ -85,4 +83,5 @@ class CButton:
             self.canvas.itemconfig(self.rect_id, fill=COLOR_PRIMARY_ACTIVE)
             self.command()
         except Exception as ex:
-            self.log.error(f"Error al ejecutar comando del botón {self.text}: {ex}")
+            from app.utils.logger_util import HermesLogger
+            HermesLogger.get_logger("CBUTTON").error(f"Error al ejecutar comando del botón {self.text}: {ex}")
