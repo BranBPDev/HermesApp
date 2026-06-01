@@ -29,9 +29,8 @@ class Login(tk.Frame):
         cx, cy = w / 2, h / 2
         sx = cx - (INPUT_W / 2)
         
-        # YA NO DIBUJAMOS EL LOGO AQUÍ
         self.canvas.create_text(cx, cy + Y_OFF["TITLE"], text="Acceso al Sistema", 
-                               fill=COLOR_TEXT_MAIN, font=FONT_TITLE, anchor="center")
+                                fill=COLOR_TEXT_MAIN, font=FONT_TITLE, anchor="center")
         
         if self.remember_me.get(): self.badge_auto.draw(sx, cy + Y_OFF["BADGES"])
 
@@ -49,6 +48,10 @@ class Login(tk.Frame):
 
         if self.error_message:
             self.canvas.create_text(cx, cy + Y_OFF["ERROR"], text=self.error_message, fill=COLOR_ERROR, font=FONT_ERROR, anchor="center")
+            
+        # Redibujar logo flotante tras el renderizado
+        try: self.winfo_toplevel()._draw_floating_logo()
+        except: pass
 
     def _toggle_rem(self): self.remember_me.set(not self.remember_me.get()); self._render()
     def _toggle_pass(self): self.pass_visible = not self.pass_visible; self._render()

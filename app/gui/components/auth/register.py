@@ -15,6 +15,7 @@ class Register(tk.Frame):
         self.canvas = tk.Canvas(self, bg=COLOR_BG_SIDE, highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
 
+        self.badge_auto = CBadge(self.canvas, "⚠ Auto-login habilitado", color=COLOR_PRIMARY)
         self.input_user = CInput(self.canvas, "USUARIO", "Nombre de usuario")
         self.input_email = CInput(self.canvas, "EMAIL", "tu@email.com")
         self.input_pass = CInput(self.canvas, "CONTRASEÑA", "Crea una contraseña", True, self._toggle_pass)
@@ -28,14 +29,18 @@ class Register(tk.Frame):
         sx, half_w = cx - (INPUT_W / 2), (INPUT_W / 2) - 5
 
         self.canvas.create_line(w, 40, w, h-40, fill=COLOR_PRIMARY, dash=(2, 20), width=4)
-        # YA NO DIBUJAMOS EL LOGO AQUÍ
         self.canvas.create_text(cx, cy + Y_OFF["TITLE"], text="Registro de Usuario", fill=COLOR_TEXT_MAIN, font=FONT_TITLE, anchor="center")
         
+        if self.remember_me.get(): self.badge_auto.draw(sx, cy + Y_OFF["BADGES"])
+
         self.input_user.draw(sx, cy + Y_OFF["USER"], w=half_w)
         self.input_email.draw(sx + half_w + 10, cy + Y_OFF["USER"], w=half_w)
         self.input_pass.draw(sx, cy + Y_OFF["PASS"], self.pass_visible)
 
         cb_y, cb_tag = cy + Y_OFF["CB"], "checkbox_reg"
+        # Hitbox invisible para todo el ancho del checkbox
+        self.canvas.create_rectangle(sx, cb_y, sx + INPUT_W, cb_y + 16, fill=COLOR_BG_SIDE, outline=COLOR_BG_SIDE, tags=cb_tag)
+        # Cuadrado visual del checkbox
         self.canvas.create_rectangle(sx, cb_y, sx+16, cb_y+16, outline=COLOR_PRIMARY, width=2, tags=cb_tag)
         if self.remember_me.get():
             self.canvas.create_text(sx+8, cb_y+8, text="✔", fill=COLOR_PRIMARY, tags=cb_tag)
@@ -45,6 +50,10 @@ class Register(tk.Frame):
 
         if self.error_message:
             self.canvas.create_text(cx, cy + Y_OFF["ERROR"], text=self.error_message, fill=COLOR_ERROR, font=FONT_ERROR, anchor="center")
+            
+        # Redibujar logo flotante tras el renderizado
+        try: self.winfo_toplevel()._draw_floating_logo()
+        except: pass
 
     def _toggle_rem(self): self.remember_me.set(not self.remember_me.get()); self._render()
     def _toggle_pass(self): self.pass_visible = not self.pass_visible; self._render()
